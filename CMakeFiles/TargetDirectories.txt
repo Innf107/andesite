@@ -1,0 +1,5 @@
+/home/prophet/Code/Andesite/CMakeFiles/edit_cache.dir
+/home/prophet/Code/Andesite/CMakeFiles/andesite.dir
+/home/prophet/Code/Andesite/CMakeFiles/runtime.dir
+/home/prophet/Code/Andesite/CMakeFiles/rebuild_cache.dir
+/home/prophet/Code/Andesite/CMakeFiles/parser.dir

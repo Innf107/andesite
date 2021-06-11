@@ -1,0 +1,2 @@
+/usr/bin/ar qc bin/libparseError.a CMakeFiles/parseError.dir/Parser/ParseError.cpp.o
+/usr/bin/ranlib bin/libparseError.a
