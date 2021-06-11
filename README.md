@@ -1,2 +1,2 @@
-# Andesite - An interpreter for minecraft Datapacks
+# Andesite - An Interpreter for Minecraft Datapacks
 WIP
