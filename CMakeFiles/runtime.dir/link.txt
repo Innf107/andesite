@@ -1,2 +1,0 @@
-/usr/bin/ar qc bin/libruntime.a CMakeFiles/runtime.dir/Runtime.cpp.o
-/usr/bin/ranlib bin/libruntime.a

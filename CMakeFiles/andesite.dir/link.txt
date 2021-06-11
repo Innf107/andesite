@@ -1,1 +1,0 @@
-/usr/bin/clang++ CMakeFiles/andesite.dir/Main.cpp.o -o bin/andesite  bin/libparser.a bin/libruntime.a 
