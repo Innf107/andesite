@@ -59,6 +59,6 @@ private:
     static GrammarType getGrammarType(std::string& grammar);
 
     static std::string grammarTypes(){
-        return "literal, <INT> or <NAME>";
+        return "literal, <INT>, <CRITERIA> or <NAME>";
     }
 };

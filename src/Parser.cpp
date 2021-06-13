@@ -33,15 +33,21 @@ ParseResult Parser::parseSegment(string& grammar, string& command){
     switch (Parser::getGrammarType(grammar)) {
         case LitGrammar:
             return command == grammar ? (ParseResult)ParseLitResult() : (ParseResult)InvalidParseResult();
+        case IntGrammar:
+            return (ParseResult)(ParseIntResult){stoi(command)};
+        case CriteriaGrammar:
+            return command == "dummy" ? (ParseResult)(ParseCriteriaResult){command} : (ParseResult)InvalidParseResult();
+        case NameGrammar:
+            return (ParseResult)(ParseNameResult){command};
         default:
             throw ParseError("Invalid or unsupported GrammarType", grammar, Parser::grammarTypes());
     };
 }
 
 bool Parser::resultIgnored(ParseResult& res){
-    if (holds_alternative<ParseNameResult>(res))
-        return false;
-    return true;
+    if (holds_alternative<ParseLitResult>(res))
+        return true;
+    return false;
 }
 
 GrammarType Parser::getGrammarType(string& grammar){
@@ -49,6 +55,8 @@ GrammarType Parser::getGrammarType(string& grammar){
         return IntGrammar;
     if(grammar == "<NAME>")
         return NameGrammar;
+    if (grammar == "<CRITERIA>")
+        return CriteriaGrammar;
     
     return LitGrammar; 
 }

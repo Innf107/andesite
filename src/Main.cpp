@@ -6,10 +6,11 @@
 
 using namespace std;
 
-void processCommand(Runtime runtime, string line){
+void processCommand(Runtime& runtime, string line){
     try {
         auto segments = Parser::splitCommand(line);
         auto resp = runtime.runCommand(segments);
+        cout << resp.message << endl;
     } catch (ParseError& p){
         cout << "PARSE ERROR: " << p.message << endl
              << "    expected: " << p.expected << endl
