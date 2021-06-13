@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include "Parser/ParseResult.h"
+#include "Parser/ParseError.h"
 
 class Parser {
 public:
@@ -16,8 +17,13 @@ public:
         std::ifstream grammarFileStream;
         grammarFileStream.open(grammarFile);
 
+        if(!grammarFileStream.is_open()){
+            throw ParseError("Grammar file does not exist", std::string(grammarFile), "valid path to a .grammar file");
+        }
+
         std::string grammarContent;
         getline(grammarFileStream, grammarContent);
+
         grammarFileStream.close();
 
         auto grammarSegments = Parser::splitCommand(grammarContent);
