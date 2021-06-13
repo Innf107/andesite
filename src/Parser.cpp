@@ -1,6 +1,10 @@
 #include "Parser.h"
 #include <string>
 #include <vector>
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include "Parser/ParseError.h"
 
 using namespace std;
 
@@ -24,3 +28,28 @@ vector<string> Parser::splitCommand(const string& cmd){
     }
     return vec;
 }
+
+ParseResult Parser::parseSegment(string& grammar, string& command){
+    switch (Parser::getGrammarType(grammar)) {
+        case LitGrammar:
+            return command == grammar ? (ParseResult)ParseLitResult() : (ParseResult)InvalidParseResult();
+        default:
+            throw ParseError("Invalid or unsupported GrammarType", grammar, Parser::grammarTypes());
+    };
+}
+
+bool Parser::resultIgnored(ParseResult& res){
+    if (holds_alternative<ParseNameResult>(res))
+        return false;
+    return true;
+}
+
+GrammarType Parser::getGrammarType(string& grammar){
+    if(grammar == "<INT>")
+        return IntGrammar;
+    if(grammar == "<NAME>")
+        return NameGrammar;
+    
+    return LitGrammar; 
+}
+

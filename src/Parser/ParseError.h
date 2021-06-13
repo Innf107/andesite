@@ -1,3 +1,5 @@
+#ifndef ANDESITE_PARSE_ERROR
+#define ANDESITE_PARSE_ERROR
 #include <exception>
 #include <string>
 
@@ -11,3 +13,5 @@ public:
     std::string received;
     std::string expected;
 };
+
+#endif

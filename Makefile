@@ -3,7 +3,8 @@ TARGET_EXEC ?= andesite
 BUILD_DIR ?= ./out
 SRC_DIRS ?= ./src
 
-CC = clang++ -Wall -Wextra -std=c++2
+CXX = clang++ -Wall -Wextra -std=c++20
+CC = $(CXX)
 
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)

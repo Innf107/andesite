@@ -10,7 +10,7 @@ void processCommand(Runtime runtime, string line){
     try {
         auto segments = Parser::splitCommand(line);
         auto resp = runtime.runCommand(segments);
-    } catch (ParseError p){
+    } catch (ParseError& p){
         cout << "PARSE ERROR: " << p.message << endl
              << "    expected: " << p.expected << endl
              << "    received: " << p.received << endl; 

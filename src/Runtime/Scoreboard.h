@@ -4,6 +4,7 @@
 
 class Scoreboard {
     public:
+        
     private:
         std::map<std::string, Objective&> objectives;       
 };

@@ -1,5 +1,7 @@
 #include "Runtime/Response.h"
 #include "Runtime/Scoreboard.h"
+#include "Parser/ParseResult.h"
+#include "Parser/ParseError.h"
 #include <vector>
 #include <string>
 
@@ -9,8 +11,14 @@ class Runtime {
     public:
         Response runCommand(std::vector<std::string> command);
     private:
-        Response runScoreboard(std::vector<std::string> args);
-        
+        Response addScoreboard(std::vector<ParseResult> args);
+        Response listScoreboard(std::vector<ParseResult> args);
+
+        template<typename a>
+        a parseError(std::string message, std::string received, std::string expected) {
+            throw ParseError(message, received, expected);
+        }
+
         Scoreboard scoreboard;
         
         std::string implementedCommands = "scoreboard";
