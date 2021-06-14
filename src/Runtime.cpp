@@ -8,18 +8,23 @@
 
 using namespace std;
 
+struct CommandSpec {
+    std::string grammar;
+    std::function<Response (const std::vector<ParseResult> &args)> cont;
+};
+
 Response Runtime::runCommand(vector<string> cmdWithArgs){
-    optional<Response> resp = 
-        Parser::runOnGrammar<optional<Response>>("scoreboard objectives add <NAME> <CRITERIA>", cmdWithArgs, [&](auto args){return scoreboardObjectivesAdd(args);}).value_or(
-        Parser::runOnGrammar<optional<Response>>("scoreboard objectives add <NAME> <CRITERIA> <NAME>", cmdWithArgs, [&](auto args){return scoreboardObjectivesAddName(args);}).value_or(
-        Parser::runOnGrammar<optional<Response>>("scoreboard objectives list", cmdWithArgs, [&](auto args){return scoreboardObjectivesList(args);}).value_or(
-        (optional<Response>){}
-    )));
-    if (resp.has_value()){
-        return resp.value();
-    } else {
-        throw ParseError("Invalid or unsupported command", "TODO", "TODO");
+    vector<CommandSpec> commands;
+    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA>", [&](auto args){return scoreboardObjectivesAdd(args);}});
+    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA> <NAME>", [&](auto args){return scoreboardObjectivesAddName(args);}});
+    commands.push_back({"scoreboard objectives list", [&](auto args){return scoreboardObjectivesList(args);}});
+
+    for (auto& [grammar, cont] : commands) {
+        auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
+        if (resp.has_value())
+            return resp.value();
     }
+    throw ParseError("Invalid or unsupported command", "TODO", "TODO");
 }
 
 Response Runtime::scoreboardObjectivesAdd(const vector<ParseResult>& args){    
