@@ -8,7 +8,7 @@
 
 using namespace std;
 
-bool Parser::isSpace(char c){
+bool Parser::isSpace(const char c){
     return c == ' ' || c == '\t';
 }
 
@@ -29,7 +29,7 @@ vector<string> Parser::splitCommand(const string& cmd){
     return vec;
 }
 
-ParseResult Parser::parseSegment(string& grammar, string& command){
+ParseResult Parser::parseSegment(const string& grammar, const string& command){
     switch (Parser::getGrammarType(grammar)) {
         case LitGrammar:
             return command == grammar ? (ParseResult)ParseLitResult() : (ParseResult)InvalidParseResult();
@@ -44,13 +44,13 @@ ParseResult Parser::parseSegment(string& grammar, string& command){
     };
 }
 
-bool Parser::resultIgnored(ParseResult& res){
+bool Parser::resultIgnored(const ParseResult& res){
     if (holds_alternative<ParseLitResult>(res))
         return true;
     return false;
 }
 
-GrammarType Parser::getGrammarType(string& grammar){
+GrammarType Parser::getGrammarType(const string& grammar){
     if(grammar == "<INT>")
         return IntGrammar;
     if(grammar == "<NAME>")

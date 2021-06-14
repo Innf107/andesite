@@ -12,21 +12,9 @@ public:
     static std::vector<std::string> splitCommand(const std::string& cmd);
     
     template <typename r>
-    static std::optional<r> runOnGrammar(const char* grammarFile, std::vector<std::string> cmd, std::function<r (std::vector<ParseResult>)> continuation)
+    static std::optional<r> runOnGrammar(const std::string& grammar, std::vector<std::string> cmd, std::function<r (std::vector<ParseResult>)> continuation)
     {
-        std::ifstream grammarFileStream;
-        grammarFileStream.open(grammarFile);
-
-        if(!grammarFileStream.is_open()){
-            throw ParseError("Grammar file does not exist", std::string(grammarFile), "valid path to a .grammar file");
-        }
-
-        std::string grammarContent;
-        getline(grammarFileStream, grammarContent);
-
-        grammarFileStream.close();
-
-        auto grammarSegments = Parser::splitCommand(grammarContent);
+        auto grammarSegments = Parser::splitCommand(grammar);
 
         if(grammarSegments.size() != cmd.size())
             return {};
@@ -51,12 +39,12 @@ public:
     }
 
 
-    static ParseResult parseSegment(std::string& grammar, std::string& command);
-    static bool resultIgnored(ParseResult& res);
+    static ParseResult parseSegment(const std::string& grammar, const std::string& command);
+    static bool resultIgnored(const ParseResult& res);
 private:
-    static bool isSpace(char c);
+    static bool isSpace(const char c);
 
-    static GrammarType getGrammarType(std::string& grammar);
+    static GrammarType getGrammarType(const std::string& grammar);
 
     static std::string grammarTypes(){
         return "literal, <INT>, <CRITERIA> or <NAME>";

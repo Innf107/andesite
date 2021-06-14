@@ -10,9 +10,9 @@ using namespace std;
 
 Response Runtime::runCommand(vector<string> cmdWithArgs){
     optional<Response> resp = 
-        Parser::runOnGrammar<optional<Response>>("src/Parser/Grammar/scoreboard/objectives/add.grammar", cmdWithArgs, [&](auto args){return scoreboardObjectivesAdd(args);}).value_or(
-        Parser::runOnGrammar<optional<Response>>("src/Parser/Grammar/scoreboard/objectives/add_name.grammar", cmdWithArgs, [&](auto args){return scoreboardObjectivesAddName(args);}).value_or(
-        Parser::runOnGrammar<optional<Response>>("src/Parser/Grammar/scoreboard/objectives/list.grammar", cmdWithArgs, [&](auto args){return scoreboardObjectivesList(args);}).value_or(
+        Parser::runOnGrammar<optional<Response>>("scoreboard objectives add <NAME> <CRITERIA>", cmdWithArgs, [&](auto args){return scoreboardObjectivesAdd(args);}).value_or(
+        Parser::runOnGrammar<optional<Response>>("scoreboard objectives add <NAME> <CRITERIA> <NAME>", cmdWithArgs, [&](auto args){return scoreboardObjectivesAddName(args);}).value_or(
+        Parser::runOnGrammar<optional<Response>>("scoreboard objectives list", cmdWithArgs, [&](auto args){return scoreboardObjectivesList(args);}).value_or(
         (optional<Response>){}
     )));
     if (resp.has_value()){
