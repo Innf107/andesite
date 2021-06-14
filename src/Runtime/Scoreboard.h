@@ -5,9 +5,12 @@
 
 class Scoreboard {
     public:
-        Objective* addObjective(std::string name, std::string criteria, std::string displayName);
+        Objective* addObjective(const std::string& name, const std::string& criteria, const std::string& displayName);
+        Objective* getObjective(const std::string& name);
+        bool removeObjective(const std::string& name);
+
         std::vector<Objective*> getAllObjectives();
-        Objective* getObjective(std::string name);
+        size_t getObjectiveCount();
     private:
         std::map<std::string, Objective*> objectives;       
 };

@@ -14,6 +14,7 @@ class Runtime {
         Response scoreboardObjectivesAdd(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesAddName(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesList(const std::vector<ParseResult>& args);
+        Response scoreboardObjectivesRemove(const std::vector<ParseResult>& args);
 
         template<typename a>
         a parseError(std::string message, std::string received, std::string expected) {

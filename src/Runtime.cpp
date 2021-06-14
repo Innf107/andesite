@@ -18,6 +18,7 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
     commands.push_back({"scoreboard objectives add <NAME> <CRITERIA>", [&](auto args){return scoreboardObjectivesAdd(args);}});
     commands.push_back({"scoreboard objectives add <NAME> <CRITERIA> <NAME>", [&](auto args){return scoreboardObjectivesAddName(args);}});
     commands.push_back({"scoreboard objectives list", [&](auto args){return scoreboardObjectivesList(args);}});
+    commands.push_back({"scoreboard objectives remove <NAME>", [&](auto args){return scoreboardObjectivesRemove(args);}});
 
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
@@ -37,7 +38,7 @@ Response Runtime::scoreboardObjectivesAdd(const vector<ParseResult>& args){
         scoreboard.addObjective(name, criteria, name);
         std::ostringstream message;
         message << "Created new objective [" << name << "]";
-        return {1, (int)scoreboard.getAllObjectives().size(), message.str()};
+        return {1, (int)scoreboard.getObjectiveCount(), message.str()};
     }
 }
 
@@ -52,7 +53,7 @@ Response Runtime::scoreboardObjectivesAddName(const vector<ParseResult>& args){
         scoreboard.addObjective(name, criteria, name);
         std::ostringstream message;
         message << "Created new objective [" << name << "]";
-        return {1, 1, message.str()};
+        return {1, (int)scoreboard.getObjectiveCount(), message.str()};
     }
 }
 
@@ -75,3 +76,20 @@ Response Runtime::scoreboardObjectivesList(const vector<ParseResult>& args){
     return {1, (int)objectives.size(), message.str()};
 }
 
+//TODO: This has to traverse 'objectives' twice to get the name.
+//This might be optimized by using objectives.extract
+Response Runtime::scoreboardObjectivesRemove(const vector<ParseResult>& args){
+    auto& name = get<ParseNameResult>(args[0]).name;
+
+    ostringstream message;
+    auto* obj = scoreboard.getObjective(name);
+    if(obj){
+        message << "Removed objective [" << obj->displayName << "]";
+        scoreboard.removeObjective(name);
+        return {1, (int)scoreboard.getObjectiveCount(), message.str()};
+
+    } else {
+        message << "Unknown scoreboard objective '" << name << "'";
+        return {0, 0, message.str()};
+    }
+}
