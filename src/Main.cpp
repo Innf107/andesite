@@ -9,6 +9,8 @@ using namespace std;
 void processCommand(Runtime& runtime, const string& line){
     try {
         auto segments = Parser::splitCommand(line);
+        if (segments.empty())
+            return;
         auto resp = runtime.runCommand(segments);
         cout << resp.message << endl;
     } catch (ParseError& p){

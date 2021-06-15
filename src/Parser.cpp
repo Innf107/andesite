@@ -17,6 +17,12 @@ vector<string> Parser::splitCommand(const string& cmd){
     size_t start = 0;
     bool inWord = false;
     for (size_t i = 0; i < cmd.length() + 1; i++){
+        if(cmd[i] == '#'){
+            if(inWord){
+                vec.push_back(cmd.substr(start, i - start));
+            }
+            break;
+        }
         if((isSpace(cmd[i]) || i == cmd.length()) && inWord){
             vec.push_back(cmd.substr(start, i - start));
             inWord = false;
