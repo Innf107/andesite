@@ -20,6 +20,9 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
     commands.push_back({"scoreboard objectives list", [&](auto args){return scoreboardObjectivesList(args);}});
     commands.push_back({"scoreboard objectives remove <NAME>", [&](auto args){return scoreboardObjectivesRemove(args);}});
 
+    commands.push_back({"scoreboard players set <NAME> <NAME> <INT>", [&](auto args){return scoreboardPlayersSet(args);}});
+    commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto args){return scoreboardPlayersGet(args);}});
+
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
         if (resp.has_value())
@@ -92,4 +95,53 @@ Response Runtime::scoreboardObjectivesRemove(const vector<ParseResult>& args){
         message << "Unknown scoreboard objective '" << name << "'";
         return {0, 0, message.str()};
     }
+}
+
+Response Runtime::scoreboardPlayersSet(const vector<ParseResult>& args){
+    auto& targetName    = get<ParseNameResult>(args[0]).name;
+    auto& objectiveName = get<ParseNameResult>(args[1]).name;
+    auto  score         = get<ParseIntResult>(args[2]).parsedInt;
+
+    auto* objective = scoreboard.getObjective(objectiveName);
+
+    if(!objective){
+        ostringstream message;
+        message << "Unknown scoreboard objective '" << objectiveName << "'";
+        return {0, 0, message.str()};
+    }
+
+    auto target = Target(targetName);
+
+    objective->setScore(targetName, score);
+    ostringstream message;
+    message << "Set [" << objective->displayName << "] for " << target.renderName() << " to " << score;
+    return {1, score, message.str()};
+}
+
+Response Runtime::scoreboardPlayersGet(const vector<ParseResult>& args){
+    auto& targetName    = get<ParseNameResult>(args[0]).name;
+    auto& objectiveName = get<ParseNameResult>(args[1]).name;
+
+    auto* objective = scoreboard.getObjective(objectiveName);
+
+    if(!objective){
+        ostringstream message;
+        message << "Unknown scoreboard objective '" << objectiveName << "'";
+        return {0, 0, message.str()};
+    }
+
+    auto target = Target(targetName);
+
+    if (objective->hasScore(target)){
+        auto score = objective->getScore(target);
+        ostringstream message;
+        message << target.renderName() << " has " << score << " [" << objective->displayName << "]";
+        return {1, score, message.str()};
+    }
+    else {
+        ostringstream message;
+        message << "Can't get value of " << objective->name << " for " << targetName << "; none is set";
+        return {0, 0, message.str()};
+    }
+
 }

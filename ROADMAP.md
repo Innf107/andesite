@@ -2,10 +2,10 @@
 
 ## Immediate goals
 - Scoreboard commands:
-    * scoreboard objectives remove
+    * ~~scoreboard objectives remove~~
     * scoreboard players add
-    * scoreboard players set
-    * scoreboard players get
+    * ~~scoreboard players set~~
+    * ~~scoreboard players get~~
     * scoreboard players list
     * scoreboard players operation
     * scoreboard players remove
@@ -17,5 +17,8 @@
     * scoreboard objectives setdisplay (NOP)
     * scoreboard objectives modify
     * scoreboard players enable
+- Functions
+- Datapack execution
 
 ## Maybe in the future
+- --tickrate flag

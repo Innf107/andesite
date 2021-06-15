@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void processCommand(Runtime& runtime, string line){
+void processCommand(Runtime& runtime, const string& line){
     try {
         auto segments = Parser::splitCommand(line);
         auto resp = runtime.runCommand(segments);
