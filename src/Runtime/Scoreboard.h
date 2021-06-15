@@ -11,6 +11,8 @@ class Scoreboard {
 
         std::vector<Objective*> getAllObjectives();
         size_t getObjectiveCount();
+    
+        ~Scoreboard();
     private:
         std::map<std::string, Objective*> objectives;       
 };

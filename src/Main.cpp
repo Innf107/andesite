@@ -23,10 +23,29 @@ istream& prompt(string& outstr){
     return getline(cin, outstr);
 }
 
-int main(){
+int main(int argc, char* argv[]){
+    vector<string> args(argv + 1, argv + argc);
+
     Runtime mainRuntime;
-    for (string line; prompt(line);){
-        processCommand(mainRuntime, line);
+    if(args.size() == 1){
+        ifstream fileStream;
+        fileStream.open(args[0]);
+        if (!fileStream.is_open()){
+            cout << "Could not open file '" << args[0] << "'" << endl;
+            return 1;
+        }
+        for (string line; getline(fileStream, line);){
+            processCommand(mainRuntime, line);
+        }
+    }
+    else if(args.size() == 0){
+        for (string line; prompt(line);){
+            processCommand(mainRuntime, line);
+        }
+    }
+    else {
+        cout << "Too many arguments" << endl;
+        return 1;
     }
     return 0;
 }

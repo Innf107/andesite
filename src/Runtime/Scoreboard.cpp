@@ -41,3 +41,9 @@ vector<Objective*> Scoreboard::getAllObjectives(){
 size_t Scoreboard::getObjectiveCount(){
     return objectives.size();
 }
+
+Scoreboard::~Scoreboard(){
+    for (auto [_, obj] : objectives){
+        delete obj;
+    }
+}
