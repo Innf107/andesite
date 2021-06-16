@@ -18,6 +18,7 @@ class Runtime {
 
         Response scoreboardPlayersSet(const std::vector<ParseResult>& args);
         Response scoreboardPlayersGet(const std::vector<ParseResult>& args);
+        Response scoreboardPlayersAdd(const std::vector<ParseResult>& args);
 
         template<typename a>
         a parseError(std::string message, std::string received, std::string expected) {

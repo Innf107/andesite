@@ -22,6 +22,7 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
 
     commands.push_back({"scoreboard players set <NAME> <NAME> <INT>", [&](auto args){return scoreboardPlayersSet(args);}});
     commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto args){return scoreboardPlayersGet(args);}});
+    commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto args){return scoreboardPlayersAdd(args);}});
 
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
@@ -145,3 +146,28 @@ Response Runtime::scoreboardPlayersGet(const vector<ParseResult>& args){
     }
 
 }
+
+Response Runtime::scoreboardPlayersAdd(const vector<ParseResult>& args){
+    auto& targetName    = get<ParseNameResult>(args[0]).name;
+    auto& objectiveName = get<ParseNameResult>(args[1]).name;
+    auto& addedScore    = get<ParseIntResult>(args[2]).parsedInt;
+
+    auto* objective = scoreboard.getObjective(objectiveName);
+
+    if(!objective){
+        ostringstream message;
+        message << "Unknown scoreboard objective '" << objectiveName << "'";
+        return {0, 0, message.str()};
+    }
+
+    auto target = Target(targetName);
+
+    auto score = objective->getScore(target);
+
+    objective->setScore(target, score + addedScore);
+
+    ostringstream message;
+    message << "Added " << addedScore << " to [" << objective->displayName << "] for " << target.renderName() << " (now " << score + addedScore << ")";
+    return {1, score, message.str()};
+}
+
