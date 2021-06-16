@@ -6,7 +6,8 @@ make
 for f in $(find test -name "*.mcfunction" -type f) 
 do
     expected=$(grep -Po '(?<=#EXPECT:).*' $f)
-    result=$(out/andesite $f)
+    args=$(grep -Po '(?<=#ARGS:).*' $f; true)
+    result=$(out/andesite $args $f)
     if [ $(echo "$result" | tail -n 1 | grep -Po "$expected") ] 
     then
         echo -e "\e[32mPassed: $f\e[0m"

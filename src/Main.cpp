@@ -3,6 +3,7 @@
 #include "Parser.h"
 #include "Parser/ParseError.h"
 #include "Runtime.h"
+#include "Config.h"
 
 using namespace std;
 
@@ -25,8 +26,29 @@ istream& prompt(string& outstr){
     return getline(cin, outstr);
 }
 
+pair<vector<string>, Config> parseArgsAndConfig(const vector<string>& argsAndConfig){
+    vector<string> args;
+    Config config;
+    for (size_t i = 0; i < argsAndConfig.size(); i++){
+        auto& arg = argsAndConfig[i];
+        if(arg == "-XRelaxedWhitespace"){
+            config.hasXRelaxedWhitespace = true;
+        } 
+        else if (!arg.starts_with('-')){
+            args.push_back(arg);
+        }
+        else {
+            cerr << "Invalid flag " << arg;
+            exit(1);
+        }
+    }
+    return {args, config};
+}
+
 int main(int argc, char* argv[]){
-    vector<string> args(argv + 1, argv + argc);
+    vector<string> argsAndConfig(argv + 1, argv + argc);
+
+    auto [args, config] = parseArgsAndConfig(argsAndConfig);
 
     Runtime mainRuntime;
     if(args.size() == 1){
