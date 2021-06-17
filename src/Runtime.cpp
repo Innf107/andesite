@@ -8,6 +8,8 @@
 
 using namespace std;
 
+Runtime::Runtime(Config& config): config(config){};
+
 struct CommandSpec {
     std::string grammar;
     std::function<Response (const std::vector<ParseResult> &args)> cont;

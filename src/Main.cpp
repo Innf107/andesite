@@ -18,6 +18,9 @@ void processCommand(Runtime& runtime, const string& line){
         cout << "PARSE ERROR: " << p.message << endl
              << "    expected: " << p.expected << endl
              << "    received: " << p.received << endl; 
+        if(runtime.config.terminateOnError){
+            exit(1);
+        }
     }
 }
 
@@ -50,8 +53,9 @@ int main(int argc, char* argv[]){
 
     auto [args, config] = parseArgsAndConfig(argsAndConfig);
 
-    Runtime mainRuntime;
+    Runtime mainRuntime(config);
     if(args.size() == 1){
+        config.terminateOnError = true;
         ifstream fileStream;
         fileStream.open(args[0]);
         if (!fileStream.is_open()){
@@ -63,6 +67,7 @@ int main(int argc, char* argv[]){
         }
     }
     else if(args.size() == 0){
+        config.terminateOnError = false;
         for (string line; prompt(line);){
             processCommand(mainRuntime, line);
         }

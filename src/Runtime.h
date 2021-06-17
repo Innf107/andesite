@@ -2,6 +2,7 @@
 #include "Runtime/Scoreboard.h"
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
+#include "Config.h"
 #include <vector>
 #include <string>
 
@@ -9,7 +10,9 @@
 // as multiple Runtimes (possibly even in parallel)
 class Runtime {
     public:
+        Runtime(Config&);
         Response runCommand(std::vector<std::string> command);
+        Config& config;
     private:
         Response scoreboardObjectivesAdd(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesAddName(const std::vector<ParseResult>& args);
