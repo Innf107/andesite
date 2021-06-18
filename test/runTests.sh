@@ -6,7 +6,7 @@ make
 failed=0
 for f in $(find test -name "*.mcfunction" -type f) 
 do
-    expected=$(grep -Po '(?<=#EXPECT:).*' $f)
+    expected="$(grep -Po '(?<=#EXPECT:).*' $f)"
     args=$(grep -Po '(?<=#ARGS:).*' $f; true)
     set +e
     result=$(out/andesite $args $f)
@@ -16,13 +16,14 @@ do
     then 
         echo -e "\e[31mRUNTIME ERROR!!!: $result\e[0m"
         failed=$(echo "$failed + 1" | bc)
-    elif  [ $(echo "$result" | tail -n 1 | grep -Po "$expected") ] 
+    elif  [ "$(echo "$result" | tail -n 1 | grep -Po "$expected")" ] 
     then
         echo -e "\e[32mPassed: $f\e[0m"
     else
         echo -e "\e[31mFAILED!!!: $f"
-        echo -e "    Expected: $expected"
-        echo -e "    Received: \n$result\e[0m"
+        echo -e "   Expected: $expected"
+        echo -e "   Received: $(echo "$result" | tail -n 1)"
+        echo -e "   Context: \n$result\e[0m"
         failed=$(echo "$failed + 1" | bc)
     fi
 done;

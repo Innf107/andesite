@@ -22,3 +22,7 @@ int Objective::getScore(const Target& target){
 bool Objective::hasScore(const Target& target){
     return scores.contains(target);
 }
+
+void Objective::resetScore(const Target& target){
+    scores.erase(target);
+}

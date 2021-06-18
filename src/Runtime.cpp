@@ -27,6 +27,7 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
     commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto& args){return scoreboardPlayersGet(args);}});
     commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersAdd(args);}});
     commands.push_back({"scoreboard players remove <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersRemove(args);}});
+    commands.push_back({"scoreboard players reset <NAME> <NAME>", [&](auto& args){return scoreboardPlayersReset(args);}});
 
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
@@ -199,4 +200,23 @@ Response Runtime::scoreboardPlayersRemove(const vector<ParseResult>& args){
     return {1, score, message.str()};
 }
 
+Response Runtime::scoreboardPlayersReset(const vector<ParseResult>& args){
+    auto& targetName    = get<ParseNameResult>(args[0]).name;
+    auto& objectiveName = get<ParseNameResult>(args[1]).name;
+
+    auto* objective = scoreboard.getObjective(objectiveName);
+
+    if(!objective){
+        ostringstream message;
+        message << "Unknown scoreboard objective '" << objectiveName << "'";
+        return {0, 0, message.str()};
+    }
+
+    auto target = Target(targetName);
+    objective->resetScore(target);
+
+    ostringstream message;
+    message << "Reset [" << objective->displayName << "] for " << target.renderName();
+    return {1, 1, message.str()};
+}
 

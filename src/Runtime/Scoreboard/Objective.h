@@ -12,6 +12,7 @@ class Objective {
         void setScore(const Target& target, const int score);
         int getScore(const Target& target);
         bool hasScore(const Target& target);
+        void resetScore(const Target& target);
     private:
         std::map<Target, int> scores;
 };
