@@ -5,6 +5,7 @@
 #include <optional>
 #include <variant>
 #include <sstream>
+#define UNUSED(x) (void)(x)
 
 using namespace std;
 
@@ -17,14 +18,15 @@ struct CommandSpec {
 
 Response Runtime::runCommand(vector<string> cmdWithArgs){
     vector<CommandSpec> commands;
-    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA>", [&](auto args){return scoreboardObjectivesAdd(args);}});
+    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA>", [&](auto& args){return scoreboardObjectivesAdd(args);}});
     commands.push_back({"scoreboard objectives add <NAME> <CRITERIA> <NAME>", [&](auto args){return scoreboardObjectivesAddName(args);}});
-    commands.push_back({"scoreboard objectives list", [&](auto args){return scoreboardObjectivesList(args);}});
-    commands.push_back({"scoreboard objectives remove <NAME>", [&](auto args){return scoreboardObjectivesRemove(args);}});
+    commands.push_back({"scoreboard objectives list", [&](auto& args){UNUSED(args);return scoreboardObjectivesList();}});
+    commands.push_back({"scoreboard objectives remove <NAME>", [&](auto& args){return scoreboardObjectivesRemove(args);}});
 
-    commands.push_back({"scoreboard players set <NAME> <NAME> <INT>", [&](auto args){return scoreboardPlayersSet(args);}});
-    commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto args){return scoreboardPlayersGet(args);}});
-    commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto args){return scoreboardPlayersAdd(args);}});
+    commands.push_back({"scoreboard players set <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersSet(args);}});
+    commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto& args){return scoreboardPlayersGet(args);}});
+    commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersAdd(args);}});
+    commands.push_back({"scoreboard players remove <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersRemove(args);}});
 
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
@@ -63,7 +65,7 @@ Response Runtime::scoreboardObjectivesAddName(const vector<ParseResult>& args){
     }
 }
 
-Response Runtime::scoreboardObjectivesList(const vector<ParseResult>& args){
+Response Runtime::scoreboardObjectivesList(){
     auto objectives = scoreboard.getAllObjectives();
     std::ostringstream message;
 
@@ -172,4 +174,29 @@ Response Runtime::scoreboardPlayersAdd(const vector<ParseResult>& args){
     message << "Added " << addedScore << " to [" << objective->displayName << "] for " << target.renderName() << " (now " << score + addedScore << ")";
     return {1, score, message.str()};
 }
+
+Response Runtime::scoreboardPlayersRemove(const vector<ParseResult>& args){
+    auto& targetName    = get<ParseNameResult>(args[0]).name;
+    auto& objectiveName = get<ParseNameResult>(args[1]).name;
+    auto& removedScore  = get<ParseIntResult>(args[2]).parsedInt;
+
+    auto* objective = scoreboard.getObjective(objectiveName);
+
+    if(!objective){
+        ostringstream message;
+        message << "Unknown scoreboard objective '" << objectiveName << "'";
+        return {0, 0, message.str()};
+    }
+
+    auto target = Target(targetName);
+
+    auto score = objective->getScore(target);
+
+    objective->setScore(target, score - removedScore);
+
+    ostringstream message;
+    message << "Removed " << removedScore << " from [" << objective->displayName << "] for " << target.renderName() << " (now " << score - removedScore << ")";
+    return {1, score, message.str()};
+}
+
 

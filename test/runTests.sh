@@ -1,4 +1,6 @@
 #!/usr/bin/bash
+set -e
+
 make
 
 failed=0
@@ -6,8 +8,10 @@ for f in $(find test -name "*.mcfunction" -type f)
 do
     expected=$(grep -Po '(?<=#EXPECT:).*' $f)
     args=$(grep -Po '(?<=#ARGS:).*' $f; true)
+    set +e
     result=$(out/andesite $args $f)
     runError=$?
+    set -e
     if [ -z runError ]
     then 
         echo -e "\e[31mRUNTIME ERROR!!!: $result\e[0m"
