@@ -7,9 +7,9 @@
     * ~~scoreboard players set~~
     * ~~scoreboard players get~~
     * scoreboard players list
-    * scoreboard players operation
+    * ~~scoreboard players operation~~
     * ~~scoreboard players remove~~
-    * scoreboard players reset
+    * ~~scoreboard players reset~~
 
 
 ## Later

@@ -28,6 +28,7 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
     commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersAdd(args);}});
     commands.push_back({"scoreboard players remove <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersRemove(args);}});
     commands.push_back({"scoreboard players reset <NAME> <NAME>", [&](auto& args){return scoreboardPlayersReset(args);}});
+    commands.push_back({"scoreboard players operation <NAME> <NAME> <OPERATION> <NAME> <NAME>", [&](auto& args){return scoreboardPlayersOperation(args);}});
 
     for (auto& [grammar, cont] : commands) {
         auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
@@ -220,3 +221,59 @@ Response Runtime::scoreboardPlayersReset(const vector<ParseResult>& args){
     return {1, 1, message.str()};
 }
 
+Response Runtime::scoreboardPlayersOperation(const vector<ParseResult>& args){
+    auto& target1Name    = get<ParseNameResult>(args[0]).name;
+    auto& objective1Name = get<ParseNameResult>(args[1]).name;
+    auto  op             = get<ParseOperatorResult>(args[2]).op;
+    auto& target2Name    = get<ParseNameResult>(args[3]).name;
+    auto& objective2Name = get<ParseNameResult>(args[4]).name;
+
+    auto* objective1 = scoreboard.getObjective(objective1Name);
+    auto* objective2 = scoreboard.getObjective(objective2Name);
+
+    auto target1 = Target(target1Name);
+    auto target2 = Target(target2Name);
+
+    auto target2Score = objective2->getScore(target2);
+    int result;
+    if(op == ParseOperatorResult::assign){
+        result = target2Score;
+    }
+    else {
+        auto target1Score = objective1->getScore(target1);
+        switch(op){
+            case ParseOperatorResult::mod:
+                result = target1Score % target2Score;
+                break;
+            case ParseOperatorResult::mul:
+                result = target1Score * target2Score;
+                break;
+            case ParseOperatorResult::add:
+                result = target1Score + target2Score;
+                break;
+            case ParseOperatorResult::sub:
+                result = target1Score - target2Score;
+                break;
+            case ParseOperatorResult::div:
+                result = target1Score / target2Score;
+                break;
+            case ParseOperatorResult::min:
+                result = min(target1Score, target2Score);
+                break;
+            case ParseOperatorResult::max:
+                result = max(target1Score, target2Score);
+                break;
+            case ParseOperatorResult::swap:
+                objective2->setScore(target2, target1Score);
+                result = target2Score;
+                break;
+            default:
+                throw ParseError("Unhandled ParseOperation", "TODO", "TODO");
+        }
+    }
+    objective1->setScore(target1, result);
+
+    ostringstream message;
+    message << "Set [" << objective1->displayName << "] for " << target1.renderName() << " to " << result;
+    return {1, result, message.str()};
+}

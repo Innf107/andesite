@@ -9,6 +9,7 @@ enum GrammarType {
 ,   IntGrammar
 ,   CriteriaGrammar
 ,   NameGrammar
+,   OperatorGrammar
 };
 
 class InvalidParseResult {};
@@ -30,7 +31,26 @@ class ParseNameResult {
         std::string name;
 };
 
-using ParseResult = std::variant<InvalidParseResult, ParseLitResult, ParseIntResult, ParseCriteriaResult, ParseNameResult>;
+
+class ParseOperatorResult {
+    public:
+        enum Operator {
+            mod,
+            mul,
+            add,
+            sub,
+            div,
+            min,
+            assign,
+            max,
+            swap
+        };
+
+        Operator op;
+        
+};
+
+using ParseResult = std::variant<InvalidParseResult, ParseLitResult, ParseIntResult, ParseCriteriaResult, ParseNameResult, ParseOperatorResult>;
 
 
 #endif

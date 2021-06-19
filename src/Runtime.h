@@ -24,6 +24,7 @@ class Runtime {
         Response scoreboardPlayersAdd(const std::vector<ParseResult>& args);
         Response scoreboardPlayersRemove(const std::vector<ParseResult>& args);
         Response scoreboardPlayersReset(const std::vector<ParseResult>& args);
+        Response scoreboardPlayersOperation(const std::vector<ParseResult>& args);
 
         template<typename a>
         a parseError(std::string message, std::string received, std::string expected) {

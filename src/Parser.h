@@ -43,10 +43,4 @@ public:
     static bool resultIgnored(const ParseResult& res);
 private:
     static bool isSpace(const char c);
-
-    static GrammarType getGrammarType(const std::string& grammar);
-
-    static std::string grammarTypes(){
-        return "literal, <INT>, <CRITERIA> or <NAME>";
-    }
 };

@@ -35,35 +35,47 @@ vector<string> Parser::splitCommand(const string& cmd){
     return vec;
 }
 
-ParseResult Parser::parseSegment(const string& grammar, const string& command){
-    switch (Parser::getGrammarType(grammar)) {
-        case LitGrammar:
-            return command == grammar ? (ParseResult)ParseLitResult() : (ParseResult)InvalidParseResult();
-        case IntGrammar:
-            return (ParseResult)(ParseIntResult){stoi(command)};
-        case CriteriaGrammar:
-            return command == "dummy" ? (ParseResult)(ParseCriteriaResult){command} : (ParseResult)InvalidParseResult();
-        case NameGrammar:
-            return (ParseResult)(ParseNameResult){command};
-        default:
-            throw ParseError("Invalid or unsupported GrammarType", grammar, Parser::grammarTypes());
-    };
+ParseResult Parser::parseSegment(const string& grammar, const string& command){            
+    if (grammar == "<INT>")
+        return (ParseResult)(ParseIntResult){stoi(command)};
+    else if (grammar == "<CRITERIA>")
+        return command == "dummy" ? (ParseResult)(ParseCriteriaResult){command} : (ParseResult)InvalidParseResult();
+    else if (grammar == "<NAME>")
+        return (ParseResult)(ParseNameResult){command};
+    else if (grammar == "<OPERATION>"){
+        ParseOperatorResult::Operator op;
+        if (command == "%="){
+            op = ParseOperatorResult::mod;
+        } else if (command == "*="){
+            op = ParseOperatorResult::mul;
+        } else if (command == "+="){
+            op = ParseOperatorResult::add;
+        } else if (command == "-="){
+            op = ParseOperatorResult::sub;
+        } else if (command == "/=") {
+            op = ParseOperatorResult::div;
+        } else if (command == "<") {
+            op = ParseOperatorResult::min;
+        } else if (command == "="){
+            op = ParseOperatorResult::assign;
+        } else if (command == ">"){
+            op = ParseOperatorResult::max;
+        } else if (command == "><"){
+            op = ParseOperatorResult::swap;
+        } else {
+            throw ParseError("Invalid Operation", command, "%=, *=, +=, -=, /=, <, =, > or ><");
+        } 
+        return (ParseResult)(ParseOperatorResult){op};
+    }
+    //Literal
+    else {
+        return command == grammar ? (ParseResult)ParseLitResult() : (ParseResult)InvalidParseResult();
+    }
 }
 
 bool Parser::resultIgnored(const ParseResult& res){
     if (holds_alternative<ParseLitResult>(res))
         return true;
     return false;
-}
-
-GrammarType Parser::getGrammarType(const string& grammar){
-    if(grammar == "<INT>")
-        return IntGrammar;
-    if(grammar == "<NAME>")
-        return NameGrammar;
-    if (grammar == "<CRITERIA>")
-        return CriteriaGrammar;
-    
-    return LitGrammar; 
 }
 
