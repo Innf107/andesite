@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <vector>
 #include <optional>
@@ -6,13 +7,16 @@
 #include <iostream>
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
+#include "Config.h"
 
 class Parser {
 public:
-    static std::vector<std::string> splitCommand(const std::string& cmd);
+    Parser(Config& config);
+
+    std::vector<std::string> splitCommand(const std::string& cmd);
     
     template <typename r>
-    static std::optional<r> runOnGrammar(const std::string& grammar, std::vector<std::string> cmd, std::function<r (std::vector<ParseResult>)> continuation)
+    std::optional<r> runOnGrammar(const std::string& grammar, std::vector<std::string> cmd, std::function<r (std::vector<ParseResult>)> continuation)
     {
         auto grammarSegments = Parser::splitCommand(grammar);
 
@@ -39,8 +43,10 @@ public:
     }
 
 
-    static ParseResult parseSegment(const std::string& grammar, const std::string& command);
-    static bool resultIgnored(const ParseResult& res);
+    ParseResult parseSegment(const std::string& grammar, const std::string& command);
+    bool resultIgnored(const ParseResult& res);
+
+    Config& config;
 private:
-    static bool isSpace(const char c);
+    bool isSpace(const char c);
 };

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Runtime::Runtime(Config& config): config(config){};
+Runtime::Runtime(Config& config): config(config), parser(Parser(config)){};
 
 struct CommandSpec {
     std::string grammar;
@@ -31,7 +31,7 @@ Response Runtime::runCommand(vector<string> cmdWithArgs){
     commands.push_back({"scoreboard players operation <NAME> <NAME> <OPERATION> <NAME> <NAME>", [&](auto& args){return scoreboardPlayersOperation(args);}});
 
     for (auto& [grammar, cont] : commands) {
-        auto resp = Parser::runOnGrammar<Response>(grammar, cmdWithArgs, cont);
+        auto resp = parser.runOnGrammar<Response>(grammar, cmdWithArgs, cont);
         if (resp.has_value())
             return resp.value();
     }

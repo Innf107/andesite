@@ -1,7 +1,9 @@
+#pragma once
 #include "Runtime/Response.h"
 #include "Runtime/Scoreboard.h"
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
+#include "Parser.h"
 #include "Config.h"
 #include <vector>
 #include <string>
@@ -13,6 +15,8 @@ class Runtime {
         Runtime(Config&);
         Response runCommand(std::vector<std::string> command);
         Config& config;
+
+        Parser parser;
     private:
         Response scoreboardObjectivesAdd(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesAddName(const std::vector<ParseResult>& args);
@@ -34,5 +38,5 @@ class Runtime {
         Scoreboard scoreboard;
         
         std::string implementedCommands = "scoreboard";
-        
+    
 };
