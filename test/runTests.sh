@@ -9,14 +9,20 @@ do
     expected="$(grep -Po '(?<=#EXPECT:).*' $f)"
     args=$(grep -Po '(?<=#ARGS:).*' $f; true)
     set +e
+
+    if [ "$(echo "$expected" | grep -P '^\s*\d+\s*$')" ]    
+    then
+        query="\D$expected\D"
+    else
+        query="$expected"
+    fi
     result=$(out/andesite $args $f)
-    runError=$?
     set -e
     if [ -z runError ]
     then 
         echo -e "\e[31mRUNTIME ERROR!!!: $result\e[0m"
         failed=$(echo "$failed + 1" | bc)
-    elif  [ "$(echo "$result" | tail -n 1 | grep -Po "$expected")" ] 
+    elif  [ "$(echo "$result" | tail -n 1 | grep -Po "$query")" ] 
     then
         echo -e "\e[32mPassed: $f\e[0m"
     else
