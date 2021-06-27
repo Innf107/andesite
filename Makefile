@@ -3,6 +3,8 @@ TARGET_EXEC ?= andesite
 BUILD_DIR ?= ./out
 SRC_DIRS ?= ./src
 
+GLOBAL_DEPS = /usr/lib/libzip.so
+
 CXX = clang++ -Wall -Wextra -std=c++20
 CC = $(CXX)
 
@@ -16,7 +18,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(CC) $(OBJS) $(GLOBAL_DEPS) -o $@ $(LDFLAGS)
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s

@@ -4,6 +4,7 @@
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
 #include "Parser.h"
+#include "DatapackLoader.h"
 #include "Config.h"
 #include <vector>
 #include <string>
