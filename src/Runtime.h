@@ -6,7 +6,9 @@
 #include "Parser.h"
 #include "DatapackLoader.h"
 #include "Config.h"
+#include "Datapack.h"
 #include <vector>
+#include <map>
 #include <string>
 
 // Runtime is a class, so multiple environments can be run
@@ -16,6 +18,7 @@ class Runtime {
         Runtime(Config&);
         Response runCommand(std::vector<std::string> command);
         Config& config;
+        std::map<std::string, Datapack> datapacks;
 
         Parser parser;
     private:
@@ -36,8 +39,5 @@ class Runtime {
             throw ParseError(message, received, expected);
         }
 
-        Scoreboard scoreboard;
-        
-        std::string implementedCommands = "scoreboard";
-    
+        Scoreboard scoreboard;    
 };

@@ -3,6 +3,8 @@ TARGET_EXEC ?= andesite
 BUILD_DIR ?= ./out
 SRC_DIRS ?= ./src
 
+OUT ?= /usr/bin/
+
 GLOBAL_DEPS = /usr/lib/libzip.so
 
 CXX = clang++ -Wall -Wextra -std=c++20
@@ -40,6 +42,9 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 
 clean:
 	$(RM) -r $(BUILD_DIR)
+
+install: $(BUILD_DIR)/$(TARGET_EXEC)
+	$(shell install $(BUILD_DIR)/$(TARGET_EXEC) $(OUT))
 
 -include $(DEPS)
 
