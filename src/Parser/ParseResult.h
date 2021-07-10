@@ -1,18 +1,6 @@
-#ifndef _PARSE_RESULT_
-#define _PARSE_RESULT_
-
+#pragma once
 #include <string>
 #include <variant>
-
-enum GrammarType {
-    LitGrammar
-,   IntGrammar
-,   CriteriaGrammar
-,   NameGrammar
-,   OperatorGrammar
-};
-
-class InvalidParseResult {};
 
 class ParseIntResult {
     public:
@@ -50,7 +38,4 @@ class ParseOperatorResult {
         
 };
 
-using ParseResult = std::variant<InvalidParseResult, ParseLitResult, ParseIntResult, ParseCriteriaResult, ParseNameResult, ParseOperatorResult>;
-
-
-#endif
+using ParseResult = std::variant<ParseLitResult, ParseIntResult, ParseCriteriaResult, ParseNameResult, ParseOperatorResult>;

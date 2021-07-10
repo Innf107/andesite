@@ -9,33 +9,64 @@
 
 using namespace std;
 
-Runtime::Runtime(Config& config): config(config), parser(Parser(config)){};
+using RParser = Parser<Response>;
 
-struct CommandSpec {
-    std::string grammar;
-    std::function<Response (const std::vector<ParseResult> &args)> cont;
-};
+Runtime::Runtime(Config& config): config(config), lexer(Lexer(config)){
+    parser = Parser<Response>();
+    parser
+        .add(RParser::literal("scoreboard")
+            -> add(RParser::literal("objectives")
+                -> add(RParser::literal("add")
+                    -> add(RParser::name()
+                        -> add(RParser::criteria()
+                            -> add(RParser::name()
+                                -> run([&](auto& args){return scoreboardObjectivesAddName(args);}))
+                            -> run([&](auto& args){return scoreboardObjectivesAdd(args);}))))
+                -> add(RParser::literal("list")
+                    -> run([&](auto& args){UNUSED(args); return scoreboardObjectivesList();}))
+                -> add(RParser::literal("remove")
+                    -> add(RParser::name()
+                        -> run([&](auto& args){return scoreboardObjectivesRemove(args);})))
+                )
+            -> add(RParser::literal("players")
+                -> add(RParser::literal("set")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> add(RParser::integer()
+                                -> run([&](auto& args){return scoreboardPlayersSet(args);})))))
+                
+                -> add(RParser::literal("get")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> run([&](auto& args){return scoreboardPlayersGet(args);}))))
+                -> add(RParser::literal("add")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> add(RParser::integer()
+                                -> run([&](auto& args){return scoreboardPlayersAdd(args);})))))
+                -> add(RParser::literal("remove")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> add(RParser::integer()
+                                -> run([&](auto& args){return scoreboardPlayersRemove(args);})))))
+                -> add(RParser::literal("reset")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> run([&](auto& args){return scoreboardPlayersReset(args);}))))
+                -> add(RParser::literal("operation")
+                    -> add(RParser::name()
+                        -> add(RParser::name()
+                            -> add(RParser::operation()
+                                -> add(RParser::name()
+                                    -> add(RParser::name()
+                                        -> run([&](auto& args){return scoreboardPlayersOperation(args);})))))))
+            )
+        );
+}
 
-Response Runtime::runCommand(vector<string> cmdWithArgs){
-    vector<CommandSpec> commands;
-    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA>", [&](auto& args){return scoreboardObjectivesAdd(args);}});
-    commands.push_back({"scoreboard objectives add <NAME> <CRITERIA> <NAME>", [&](auto args){return scoreboardObjectivesAddName(args);}});
-    commands.push_back({"scoreboard objectives list", [&](auto& args){UNUSED(args);return scoreboardObjectivesList();}});
-    commands.push_back({"scoreboard objectives remove <NAME>", [&](auto& args){return scoreboardObjectivesRemove(args);}});
 
-    commands.push_back({"scoreboard players set <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersSet(args);}});
-    commands.push_back({"scoreboard players get <NAME> <NAME>", [&](auto& args){return scoreboardPlayersGet(args);}});
-    commands.push_back({"scoreboard players add <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersAdd(args);}});
-    commands.push_back({"scoreboard players remove <NAME> <NAME> <INT>", [&](auto& args){return scoreboardPlayersRemove(args);}});
-    commands.push_back({"scoreboard players reset <NAME> <NAME>", [&](auto& args){return scoreboardPlayersReset(args);}});
-    commands.push_back({"scoreboard players operation <NAME> <NAME> <OPERATION> <NAME> <NAME>", [&](auto& args){return scoreboardPlayersOperation(args);}});
-
-    for (auto& [grammar, cont] : commands) {
-        auto resp = parser.runOnGrammar<Response>(grammar, cmdWithArgs, cont);
-        if (resp.has_value())
-            return resp.value();
-    }
-    throw ParseError("Invalid or unsupported command", "TODO", "TODO");
+Response Runtime::runCommand(const vector<string>& cmdWithArgs){
+    return parser.execute(cmdWithArgs);    
 }
 
 Response Runtime::scoreboardObjectivesAdd(const vector<ParseResult>& args){    
@@ -229,7 +260,10 @@ Response Runtime::scoreboardPlayersOperation(const vector<ParseResult>& args){
     auto& objective2Name = get<ParseNameResult>(args[4]).name;
 
     auto* objective1 = scoreboard.getObjective(objective1Name);
+    if(objective1 == nullptr) return invalidObjective(objective1Name);
+
     auto* objective2 = scoreboard.getObjective(objective2Name);
+    if(objective2 == nullptr) return invalidObjective(objective2Name);
 
     auto target1 = Target(target1Name);
     auto target2 = Target(target2Name);
@@ -276,4 +310,12 @@ Response Runtime::scoreboardPlayersOperation(const vector<ParseResult>& args){
     ostringstream message;
     message << "Set [" << objective1->displayName << "] for " << target1.renderName() << " to " << result;
     return {1, result, message.str()};
+}
+
+
+
+Response Runtime::invalidObjective(const string& objectiveName){
+    ostringstream message;
+    message << "Unknown scoreboard objective '" << objectiveName << "'";
+    return {0, 0, message.str()};
 }

@@ -9,7 +9,7 @@ using namespace std;
 
 void processCommand(Runtime& runtime, const string& line){
     try {
-        auto segments = runtime.parser.splitCommand(line);
+        vector<string> segments = runtime.lexer.splitCommand(line);
         if (segments.empty())
             return;
         auto resp = runtime.runCommand(segments);

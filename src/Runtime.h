@@ -4,6 +4,7 @@
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
 #include "Parser.h"
+#include "Lexer.h"
 #include "DatapackLoader.h"
 #include "Config.h"
 #include "Datapack.h"
@@ -11,16 +12,15 @@
 #include <map>
 #include <string>
 
-// Runtime is a class, so multiple environments can be run
-// as multiple Runtimes (possibly even in parallel)
 class Runtime {
     public:
         Runtime(Config&);
-        Response runCommand(std::vector<std::string> command);
+        Response runCommand(const std::vector<std::string>& command);
         Config& config;
         std::map<std::string, Datapack> datapacks;
 
-        Parser parser;
+        Parser<Response> parser;
+        Lexer lexer;
     private:
         Response scoreboardObjectivesAdd(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesAddName(const std::vector<ParseResult>& args);
@@ -40,4 +40,6 @@ class Runtime {
         }
 
         Scoreboard scoreboard;    
+
+        Response invalidObjective(const std::string& objectiveName);
 };
