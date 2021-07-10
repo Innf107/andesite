@@ -18,7 +18,8 @@ template<typename R>
 class Parser{
     public:
         explicit Parser() 
-        : children(std::vector<Parser*>())
+        : expected("")
+        , children(std::vector<Parser*>())
         , _execute([&](const auto& args, int start, auto& partial_results, auto& children){
             for(auto* c : children){
                 auto result = c->_execute(args, start, partial_results, c->children);
@@ -26,11 +27,13 @@ class Parser{
                     return result.value();
                 }
             }
-            throw ParseError("Invalid or unsupported command", args[0], "TODO");
+            throw ParseError("Invalid or unsupported command", args[0], mkExpected(children));
         }){}
 
-        explicit Parser(std::function<std::optional<R> (const std::vector<std::string>&, int, std::vector<ParseResult>&, std::vector<Parser*>&)> exec) 
-        : children(std::vector<Parser*>()), _execute(exec){}
+        explicit Parser(const std::string& expected, std::function<std::optional<R> (const std::vector<std::string>&, int, std::vector<ParseResult>&, std::vector<Parser*>&)> exec) 
+        : expected(expected) 
+        , children(std::vector<Parser*>())
+        , _execute(exec){}
 
         ~Parser(){
             for (auto* c : children){
@@ -48,7 +51,7 @@ class Parser{
             return this;
         }
         Parser* run(std::function<R (const std::vector<ParseResult>& args)> run){
-            children.push_back(new Parser([run](auto& args, int start, auto& results, auto& children){
+            children.push_back(new Parser("<EOF>", [run](auto& args, int start, auto& results, auto& children){
                 UNUSED(args); UNUSED(start); UNUSED(children);
                 return run(results);
             }));
@@ -56,18 +59,18 @@ class Parser{
         }
         
         static Parser* literal(const std::string& lit){
-            return argParser([=](auto& arg){return Util::when(arg == lit, ParseLitResult());});
+            return argParser(lit, [=](auto& arg){return Util::when(arg == lit, ParseLitResult());});
         }
         static Parser* name(){
-            return argParser([](const std::string& arg){return (ParseNameResult){arg};});
+            return argParser("<NAME>", [](const std::string& arg){return (ParseNameResult){arg};});
         }
 
         static Parser* criteria(){
-            return argParser([](const std::string& arg){return Util::when(arg == "dummy", (ParseCriteriaResult){arg});});
+            return argParser("<CRITERIA>", [](const std::string& arg){return Util::when(arg == "dummy", (ParseCriteriaResult){arg});});
         }
 
         static Parser* integer(){
-            return argParser([](const std::string& arg) -> std::optional<ParseResult> {
+            return argParser("<INTEGER>", [](const std::string& arg) -> std::optional<ParseResult> {
                 try {
                     return (ParseIntResult){stoi(arg)};
                 } catch (std::invalid_argument&) {
@@ -77,7 +80,7 @@ class Parser{
         }
 
         static Parser* operation(){
-            return argParser([](const std::string& arg) -> std::optional<ParseResult> {
+            return argParser("<OPERATION>", [](const std::string& arg) -> std::optional<ParseResult> {
                 ParseOperatorResult::Operator op;
                 if (arg == "%="){
                     op = ParseOperatorResult::mod;
@@ -105,11 +108,12 @@ class Parser{
         }
 
     private:
+        std::string expected;
         std::vector<Parser*> children;
         std::function<std::optional<R> (const std::vector<std::string>&, int, std::vector<ParseResult>&, std::vector<Parser*>&)> _execute;
 
-        static Parser* argParser(std::function<std::optional<ParseResult> (const std::string&)> parser){
-            return new Parser([parser](const std::vector<std::string>& args, int start, std::vector<ParseResult>& partialResults, std::vector<Parser*>& children){
+        static Parser* argParser(const std::string& expected, std::function<std::optional<ParseResult> (const std::string&)> parser){
+            return new Parser(expected, [parser](const std::vector<std::string>& args, int start, std::vector<ParseResult>& partialResults, std::vector<Parser*>& children){
                 if(start >= (int)args.size()){
                     return (std::optional<R>){};
                 }
@@ -126,11 +130,26 @@ class Parser{
                         }
                     }
                     auto& failedArg = (int)args.size() > start + 1 ? args[start + 1] : "<EOF>";
-                    throw ParseError("Invalid or unsupported command", failedArg, "TODO");
+                    throw ParseError("Invalid or unsupported command", failedArg, mkExpected(children));
                 } else {
                     return (std::optional<R>){};
                 }
             });
+        }
+
+        static std::string mkExpected(const std::vector<Parser*>& children){
+            std::ostringstream message;
+            for (int i = 0; i < (int)children.size() - 2; i++){
+                message << children[i]->expected << ", ";
+            }
+            if (children.size() >= 2) {
+                message << children[children.size() - 2]->expected;
+                message << " or ";
+            }
+            if (children.size() >= 1){
+                message << children[children.size() - 1]->expected;
+            }
+            return message.str();
         }
 };
 

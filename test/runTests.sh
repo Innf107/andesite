@@ -6,8 +6,9 @@ make
 failed=0
 for f in $(find test -name "*.mcfunction" -type f) 
 do
-    expected="$(grep -Po '(?<=#EXPECT:).*' $f)"
+    expected="$(grep -Po '(?<=#EXPECT:).*' $f | sed 's/\\n/\#/g')"
     args=$(grep -Po '(?<=#ARGS:).*' $f; true)
+    lines=$(grep -Po '(?<=#LINES:).*' $f || echo '1')
     set +e
 
     if [ "$(echo "$expected" | grep -P '^\s*\d+\s*$')" ]    
@@ -18,17 +19,13 @@ do
     fi
     result=$(out/andesite $args $f)
     set -e
-    if [ -z runError ]
-    then 
-        echo -e "\e[31mRUNTIME ERROR!!!: $result\e[0m"
-        failed=$(echo "$failed + 1" | bc)
-    elif  [ "$(echo "$result" | tail -n 1 | grep -Po "$query")" ] 
+    if  [ "$(echo "$result" | tail -n $lines | tr "\n" \# | grep -Po "$query")" ] 
     then
         echo -e "\e[32mPassed: $f\e[0m"
     else
         echo -e "\e[31mFAILED!!!: $f"
-        echo -e "   Expected: $expected"
-        echo -e "   Received: $(echo "$result" | tail -n 1)"
+        echo -e "   Expected: $(echo "$expected" | sed s/\#/"\n"/g)"
+        echo -e "   Received: $(echo "$result" | tail -n $lines)"
         echo -e "   Context: \n$result\e[0m"
         failed=$(echo "$failed + 1" | bc)
     fi
