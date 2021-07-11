@@ -11,11 +11,16 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <filesystem>
 
 class Runtime {
     public:
         Runtime(Config&);
+        void processCommand(const std::string& line);
         Response runCommand(const std::vector<std::string>& command);
+
+        void loadFile(const std::filesystem::path& filepath);
+
         Config& config;
         std::map<std::string, Datapack> datapacks;
 
@@ -42,4 +47,8 @@ class Runtime {
         Scoreboard scoreboard;    
 
         Response invalidObjective(const std::string& objectiveName);
+
+        void runScript(const std::filesystem::path& file);
+
+        void warn(const std::string& message);
 };

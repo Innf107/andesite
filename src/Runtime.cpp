@@ -2,14 +2,34 @@
 #include "Parser/ParseError.h"
 #include "Parser/ParseResult.h"
 #include "Parser.h"
+#include "LoaderError.h"
 #include <optional>
 #include <variant>
 #include <sstream>
+#include <filesystem>
 #define UNUSED(x) (void)(x)
 
 using namespace std;
 
 using RParser = Parser<Response>;
+
+void Runtime::processCommand(const std::string& line){
+    try {
+        vector<string> segments = lexer.splitCommand(line);
+        if (segments.empty())
+            return;
+        auto resp = runCommand(segments);
+        cout << resp.message << endl;
+    } catch (ParseError& p){
+        cout << "PARSE ERROR: " << p.message << endl
+             << "    expected: " << p.expected << endl
+             << "    received: " << p.received << endl; 
+        if(config.terminateOnError){
+            exit(1);
+        }
+    }
+
+}
 
 Runtime::Runtime(Config& config): config(config), lexer(Lexer(config)){
     parser = Parser<Response>();
@@ -318,4 +338,38 @@ Response Runtime::invalidObjective(const string& objectiveName){
     ostringstream message;
     message << "Unknown scoreboard objective '" << objectiveName << "'";
     return {0, 0, message.str()};
+}
+
+void Runtime::loadFile(const filesystem::path& filepath){
+    if(filepath.extension() == ".mcfunction"){
+        runScript(filepath);
+    } else if (filepath.extension() == ".zip"){
+        ostringstream message;
+        message << "Could not load " << filepath << ". Zip Datapacks are not yet supported";
+        throw LoaderError (message.str());
+    } else if (filesystem::is_directory(filepath)){
+        ostringstream message;
+        message << "Could not load " << filepath << ". Directory Datapacks are not yet supported";
+        throw LoaderError (message.str());
+    } else {
+        ostringstream message;
+        message << "Not a valid datapack or mcfunction script: " << filepath;
+        throw LoaderError(message.str());
+    }
+}
+
+void Runtime::runScript(const filesystem::path& file){
+    ifstream fileStream;
+    fileStream.open(file);
+    if (!fileStream.is_open()){
+        cout << "Could not open file '" << file << "'" << endl;
+        throw "todo";
+    }
+    for (string line; getline(fileStream, line);){
+        processCommand(line);
+    }
+}
+
+void Runtime::warn(const string& message){
+    cerr << "[WARNING]: " << message << endl;
 }
