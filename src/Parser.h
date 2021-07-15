@@ -5,8 +5,7 @@
 #include <functional>
 #include <fstream>
 #include <iostream>
-#include <memory>
-#include <regex>
+#include <sstream>
 #include "Util.h"
 #include "Parser/ParseResult.h"
 #include "Parser/ParseError.h"
@@ -53,8 +52,12 @@ class Parser{
         }
         Parser* run(std::function<R (const std::vector<ParseResult>& args)> run){
             children.push_back(new Parser("<EOF>", [run](auto& args, int start, auto& results, auto& children){
-                UNUSED(args); UNUSED(start); UNUSED(children);
-                return run(results);
+                UNUSED(children);
+                if (start < args.size()){
+                    throw ParseError("Too many arguments to command", args[start], "<EOF>");
+                } else {
+                    return run(results);
+                }
             }));
             return this;
         }
