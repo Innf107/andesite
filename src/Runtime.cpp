@@ -3,6 +3,7 @@
 #include "Parser/ParseResult.h"
 #include "Parser.h"
 #include "LoaderError.h"
+#include "Util.h"
 #include <optional>
 #include <variant>
 #include <sstream>
@@ -10,6 +11,8 @@
 #define UNUSED(x) (void)(x)
 
 using namespace std;
+
+using Util::bind;
 
 using RParser = Parser<Response>;
 
@@ -40,46 +43,46 @@ Runtime::Runtime(Config& config): config(config), lexer(Lexer(config)){
                     -> add(RParser::name()
                         -> add(RParser::criteria()
                             -> add(RParser::name()
-                                -> run([&](auto& args){return scoreboardObjectivesAddName(args);}))
-                            -> run([&](auto& args){return scoreboardObjectivesAdd(args);}))))
+                                -> run(bind(this, &Runtime::scoreboardObjectivesAddName)))
+                            -> run(bind(this, &Runtime::scoreboardObjectivesAdd)))))
                 -> add(RParser::literal("list")
-                    -> run([&](auto& args){UNUSED(args); return scoreboardObjectivesList();}))
+                    -> run(bind(this, &Runtime::scoreboardObjectivesList)))
                 -> add(RParser::literal("remove")
                     -> add(RParser::name()
-                        -> run([&](auto& args){return scoreboardObjectivesRemove(args);})))
+                        -> run(bind(this, &Runtime::scoreboardObjectivesRemove))))
                 )
             -> add(RParser::literal("players")
                 -> add(RParser::literal("set")
                     -> add(RParser::name()
                         -> add(RParser::name()
                             -> add(RParser::integer()
-                                -> run([&](auto& args){return scoreboardPlayersSet(args);})))))
+                                -> run(bind(this, &Runtime::scoreboardPlayersSet))))))
                 
                 -> add(RParser::literal("get")
                     -> add(RParser::name()
                         -> add(RParser::name()
-                            -> run([&](auto& args){return scoreboardPlayersGet(args);}))))
+                            -> run(bind(this, &Runtime::scoreboardPlayersGet)))))
                 -> add(RParser::literal("add")
                     -> add(RParser::name()
                         -> add(RParser::name()
                             -> add(RParser::integer()
-                                -> run([&](auto& args){return scoreboardPlayersAdd(args);})))))
+                                -> run(bind(this, &Runtime::scoreboardPlayersAdd))))))
                 -> add(RParser::literal("remove")
                     -> add(RParser::name()
                         -> add(RParser::name()
                             -> add(RParser::integer()
-                                -> run([&](auto& args){return scoreboardPlayersRemove(args);})))))
+                                -> run(bind(this, &Runtime::scoreboardPlayersRemove))))))
                 -> add(RParser::literal("reset")
                     -> add(RParser::name()
                         -> add(RParser::name()
-                            -> run([&](auto& args){return scoreboardPlayersReset(args);}))))
+                            -> run(bind(this, &Runtime::scoreboardPlayersReset)))))
                 -> add(RParser::literal("operation")
                     -> add(RParser::name()
                         -> add(RParser::name()
                             -> add(RParser::operation()
                                 -> add(RParser::name()
                                     -> add(RParser::name()
-                                        -> run([&](auto& args){return scoreboardPlayersOperation(args);})))))))
+                                        -> run(bind(this, &Runtime::scoreboardPlayersOperation))))))))
             )
         );
 }
@@ -118,7 +121,8 @@ Response Runtime::scoreboardObjectivesAddName(const vector<ParseResult>& args){
     }
 }
 
-Response Runtime::scoreboardObjectivesList(){
+Response Runtime::scoreboardObjectivesList(const vector<ParseResult>& args){
+    UNUSED(args);
     auto objectives = scoreboard.getAllObjectives();
     std::ostringstream message;
 

@@ -29,7 +29,7 @@ class Runtime {
     private:
         Response scoreboardObjectivesAdd(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesAddName(const std::vector<ParseResult>& args);
-        Response scoreboardObjectivesList();
+        Response scoreboardObjectivesList(const std::vector<ParseResult>& args);
         Response scoreboardObjectivesRemove(const std::vector<ParseResult>& args);
 
         Response scoreboardPlayersSet(const std::vector<ParseResult>& args);

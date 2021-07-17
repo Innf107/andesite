@@ -50,10 +50,10 @@ class Parser{
             children.push_back(child);
             return this;
         }
-        Parser* run(std::function<R (const std::vector<ParseResult>& args)> run){
+        Parser* run(const std::function<R (const std::vector<ParseResult>& args)> run){
             children.push_back(new Parser("<EOF>", [run](auto& args, int start, auto& results, auto& children){
                 UNUSED(children);
-                if (start < args.size()){
+                if (start < (int)args.size()){
                     throw ParseError("Too many arguments to command", args[start], "<EOF>");
                 } else {
                     return run(results);
@@ -107,7 +107,7 @@ class Parser{
                 } else {
                     return {};
                 }
-                return (ParseOperatorResult){op};
+                return ParseOperatorResult{op};
             });
         }
 
