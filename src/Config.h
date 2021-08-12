@@ -1,8 +1,7 @@
 #pragma once
-class Config {
-    public:
-        bool hasXRelaxedWhitespace = false;
-        bool hasXStrictScoreboard = false;
+struct Config {
+    bool hasXRelaxedWhitespace = false;
+    bool hasXStrictScoreboard = false;
 
-        bool terminateOnError = false;
+    bool terminateOnError = false;
 };

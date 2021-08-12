@@ -16,8 +16,7 @@ istream& prompt(string& outstr){
 pair<vector<string>, Config> parseArgsAndConfig(const vector<string>& argsAndConfig){
     vector<string> args;
     Config config;
-    for (size_t i = 0; i < argsAndConfig.size(); i++){
-        auto& arg = argsAndConfig[i];
+    for (auto& arg : argsAndConfig){
         if(arg == "-XRelaxedWhitespace"){
             config.hasXRelaxedWhitespace = true;
         } 
@@ -27,12 +26,12 @@ pair<vector<string>, Config> parseArgsAndConfig(const vector<string>& argsAndCon
         else if (arg == "--terminate-on-error"){
             config.terminateOnError = true;
         }
-        else if (!arg.starts_with('-')){
-            args.push_back(arg);
-        }
-        else {
+        else if (arg.starts_with('-')){
             cerr << "Invalid flag " << arg << endl;
             exit(1);
+        }
+        else {
+            args.push_back(arg);
         }
     }
     return {args, config};
