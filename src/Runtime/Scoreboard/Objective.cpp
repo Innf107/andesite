@@ -11,11 +11,11 @@ void Objective::setScore(const Target& target, const int score){
     scores[target] = score;
 }
 
-int Objective::getScore(const Target& target){
+optional<int> Objective::getScore(const Target& target){
     if (scores.contains(target)){
         return scores[target];
     } else {
-        return 0;
+        return {};
     }
 }
 

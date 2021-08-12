@@ -3,6 +3,7 @@
 #include "Parser/ParseResult.h"
 #include "Parser.h"
 #include "LoaderError.h"
+#include "RuntimeError.h"
 #include "Util.h"
 #include <optional>
 #include <variant>
@@ -28,10 +29,15 @@ void Runtime::processCommand(const std::string& line){
              << "    expected: " << p.expected << endl
              << "    received: " << p.received << endl; 
         if(config.terminateOnError){
-            exit(1);
+            exit(2);
+        }
+    } catch (RuntimeError& re){
+        cout << "RUNTIME ERROR: " << re.message << endl;
+
+        if(config.terminateOnError){
+            exit(3);
         }
     }
-
 }
 
 Runtime::Runtime(Config& config): config(config), lexer(Lexer(config)){
@@ -97,7 +103,7 @@ Response Runtime::scoreboardObjectivesAdd(const vector<ParseResult>& args){
     auto criteria = std::get<ParseCriteriaResult>(args[1]).criteria;
     
     if (scoreboard.getObjective(name)){
-        return {0, 0, "An objective already exists by that name"};
+        return {0, 0, failOnStrict("An objective already exists by that name")};
     } else {
         scoreboard.addObjective(name, criteria, name);
         std::ostringstream message;
@@ -112,7 +118,7 @@ Response Runtime::scoreboardObjectivesAddName(const vector<ParseResult>& args){
     auto displayName = std::get<ParseNameResult>(args[2]).name;
 
     if (scoreboard.getObjective(name)){
-        return {0, 0, "An objective already exists by that name"};
+        return {0, 0, failOnStrict("An objective already exists by that name")};
     } else {
         scoreboard.addObjective(name, criteria, name);
         std::ostringstream message;
@@ -155,7 +161,7 @@ Response Runtime::scoreboardObjectivesRemove(const vector<ParseResult>& args){
 
     } else {
         message << "Unknown scoreboard objective '" << name << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 }
 
@@ -169,7 +175,7 @@ Response Runtime::scoreboardPlayersSet(const vector<ParseResult>& args){
     if(!objective){
         ostringstream message;
         message << "Unknown scoreboard objective '" << objectiveName << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
     auto target = Target(targetName);
@@ -189,13 +195,13 @@ Response Runtime::scoreboardPlayersGet(const vector<ParseResult>& args){
     if(!objective){
         ostringstream message;
         message << "Unknown scoreboard objective '" << objectiveName << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
     auto target = Target(targetName);
 
     if (objective->hasScore(target)){
-        auto score = objective->getScore(target);
+        auto score = objective->getScore(target).value_or(0);
         ostringstream message;
         message << target.renderName() << " has " << score << " [" << objective->displayName << "]";
         return {1, score, message.str()};
@@ -203,7 +209,7 @@ Response Runtime::scoreboardPlayersGet(const vector<ParseResult>& args){
     else {
         ostringstream message;
         message << "Can't get value of " << objective->name << " for " << targetName << "; none is set";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
 }
@@ -218,12 +224,12 @@ Response Runtime::scoreboardPlayersAdd(const vector<ParseResult>& args){
     if(!objective){
         ostringstream message;
         message << "Unknown scoreboard objective '" << objectiveName << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
     auto target = Target(targetName);
 
-    auto score = objective->getScore(target);
+    auto score = objective->getScore(target).value_or(0);
 
     objective->setScore(target, score + addedScore);
 
@@ -242,12 +248,12 @@ Response Runtime::scoreboardPlayersRemove(const vector<ParseResult>& args){
     if(!objective){
         ostringstream message;
         message << "Unknown scoreboard objective '" << objectiveName << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
     auto target = Target(targetName);
 
-    auto score = objective->getScore(target);
+    auto score = objective->getScore(target).value_or(0);
 
     objective->setScore(target, score - removedScore);
 
@@ -265,7 +271,7 @@ Response Runtime::scoreboardPlayersReset(const vector<ParseResult>& args){
     if(!objective){
         ostringstream message;
         message << "Unknown scoreboard objective '" << objectiveName << "'";
-        return {0, 0, message.str()};
+        return {0, 0, failOnStrict(message.str())};
     }
 
     auto target = Target(targetName);
@@ -292,13 +298,18 @@ Response Runtime::scoreboardPlayersOperation(const vector<ParseResult>& args){
     auto target1 = Target(target1Name);
     auto target2 = Target(target2Name);
 
-    auto target2Score = objective2->getScore(target2);
+    if(config.hasXStrictScoreboard && !objective2->hasScore(target2)){
+        throw RuntimeError(Util::message([&](auto& x){x << "'" << target2Name << "' does not have a score for '" << objective2Name << "'";}));
+    }
+
+    auto target2Score = objective2->getScore(target2).value_or(0);
+
     int result;
     if(op == ParseOperatorResult::assign){
         result = target2Score;
     }
     else {
-        auto target1Score = objective1->getScore(target1);
+        auto target1Score = objective1->getScore(target1).value_or(0);
         switch(op){
             case ParseOperatorResult::mod:
                 result = target1Score % target2Score;
@@ -341,7 +352,7 @@ Response Runtime::scoreboardPlayersOperation(const vector<ParseResult>& args){
 Response Runtime::invalidObjective(const string& objectiveName){
     ostringstream message;
     message << "Unknown scoreboard objective '" << objectiveName << "'";
-    return {0, 0, message.str()};
+    return {0, 0, failOnStrict(message.str())};
 }
 
 void Runtime::loadFile(const filesystem::path& filepath){
@@ -376,4 +387,12 @@ void Runtime::runScript(const filesystem::path& file){
 
 void Runtime::warn(const string& message){
     cerr << "[WARNING]: " << message << endl;
+}
+
+std::string Runtime::failOnStrict(const std::string& message){
+    if(config.hasXStrictScoreboard){
+        throw RuntimeError(message);
+    } else {
+        return message;
+    }
 }

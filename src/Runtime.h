@@ -51,4 +51,6 @@ class Runtime {
         void runScript(const std::filesystem::path& file);
 
         void warn(const std::string& message);
+
+        std::string failOnStrict(const std::string& message);
 };

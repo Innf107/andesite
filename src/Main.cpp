@@ -21,11 +21,17 @@ pair<vector<string>, Config> parseArgsAndConfig(const vector<string>& argsAndCon
         if(arg == "-XRelaxedWhitespace"){
             config.hasXRelaxedWhitespace = true;
         } 
+        else if (arg == "-XStrictScoreboard"){
+            config.hasXStrictScoreboard = true;
+        }
+        else if (arg == "--terminate-on-error"){
+            config.terminateOnError = true;
+        }
         else if (!arg.starts_with('-')){
             args.push_back(arg);
         }
         else {
-            cerr << "Invalid flag " << arg;
+            cerr << "Invalid flag " << arg << endl;
             exit(1);
         }
     }
@@ -46,7 +52,6 @@ int main(int argc, char* argv[]){
             }
         }
         else if(args.size() == 0){
-            config.terminateOnError = false;
             for (string line; prompt(line);){
                 mainRuntime.processCommand(line);
             }

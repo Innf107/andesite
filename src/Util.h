@@ -1,5 +1,7 @@
 #pragma once
 #include <optional>
+#include <functional>
+#include <string>
 
 namespace Util {
     template<typename a>
@@ -16,4 +18,6 @@ namespace Util {
             return (*instance.*f)(as...);
         };
     }
+
+    std::string message(std::function<void (std::ostringstream&)> cb);
 }

@@ -1,4 +1,5 @@
 #include <map>
+#include <optional>
 #include "Target.h"
 
 class Objective {
@@ -10,7 +11,7 @@ class Objective {
         ~Objective();
 
         void setScore(const Target& target, const int score);
-        int getScore(const Target& target);
+        std::optional<int> getScore(const Target& target);
         bool hasScore(const Target& target);
         void resetScore(const Target& target);
     private:
