@@ -8,7 +8,11 @@
 #include <optional>
 #include <variant>
 #include <sstream>
+#include <functional>
 #include <filesystem>
+#include <algorithm>
+#include <string>
+#include "Function.h"
 #define UNUSED(x) (void)(x)
 
 using namespace std;
@@ -361,11 +365,11 @@ void Runtime::loadFile(const filesystem::path& filepath){
     } else if (filepath.extension() == ".zip"){
         ostringstream message;
         message << "Could not load " << filepath << ". Zip Datapacks are not yet supported";
-        throw LoaderError (message.str());
+        loadDatapack(loadFromZip(filepath));
     } else if (filesystem::is_directory(filepath)){
         ostringstream message;
         message << "Could not load " << filepath << ". Directory Datapacks are not yet supported";
-        throw LoaderError (message.str());
+        loadDatapack(loadFromDirectory(filepath));
     } else {
         ostringstream message;
         message << "Not a valid datapack or mcfunction script: " << filepath;
@@ -383,6 +387,93 @@ void Runtime::runScript(const filesystem::path& file){
     for (string line; getline(fileStream, line);){
         processCommand(line);
     }
+}
+
+// Naively, all datapacks could just be kept as a list, and then every
+// function call would have to iterate through every single datapack.
+// To make this more efficient however, loadDatapack should really merge
+// 'datapack's namespace map with a global one in the runtime.
+// The datapack will also have to be stored in a list, such that
+// it is possible to unload datapacks (probably just by unloading everything
+// and loading all active packs.)
+void Runtime::loadDatapack(const Datapack& datapack){
+    loadedDatapacks.push_back(datapack);
+    combinedDatapack.merge(datapack);
+}
+
+Datapack Runtime::loadFromZip(const filesystem::path& path){
+    int error = ZIP_ER_OK;
+    zip_t* zip = zip_open(path.c_str(), ZIP_RDONLY, &error);
+
+    if(error != ZIP_ER_OK){
+        throw LoaderError(Util::message([&](auto& x){x<<"Could not open zip file '" << path << "': libzip error code: " << error;}));
+    }
+
+    auto functions = readFunctions(zip);
+
+    return Datapack(path.filename(), functions);
+}
+
+Datapack Runtime::loadFromDirectory(const filesystem::path& path){
+    throw "LoadFromDirectory NYI";
+}
+
+vector<Function> Runtime::readFunctions(zip_t* zip){
+    auto length = zip_get_num_entries(zip, 0);
+    vector<Function> functions;
+    for(auto i = 0; i < length; i++){
+        const char* name = zip_get_name(zip, i, 0);
+        
+        auto dataPath = filesystem::path(name).lexically_proximate("data/");
+
+        string nspace = *dataPath.begin(); // TODO: :/
+
+        if (nspace != ".."){            
+            auto path = dataPath.lexically_proximate(nspace + "/functions");
+
+            if (*path.begin() != "..") // TODO: :/ 
+            {
+                auto contents = readZipStringIndex(zip, i);
+
+                auto function = parseFunction(nspace, path, contents);
+
+                functions.push_back(function);
+            }
+        }
+    }
+    return functions;
+}
+
+
+string Runtime::readZipStringIndex(zip_t* zip, const zip_uint64_t ix){
+    zip_stat_t stat;
+    zip_stat_init(&stat);
+    int error = zip_stat_index(zip, ix, 0, &stat);
+    if (error != ZIP_ER_OK){
+        throw LoaderError(Util::message([&](auto& x){x<<"Cannot stat zip file entry with index " << ix << ": libzip error code: " << error;}));
+    }
+    auto* file = zip_fopen_index(zip, ix, 0);
+    
+    char* buffer = new char[stat.size];
+    zip_fread(file, buffer, stat.size);
+
+    error = zip_fclose(file);
+    if (error != ZIP_ER_OK){
+        throw LoaderError(Util::message([&](auto& x){x<<"Cannot close zip file entry with index " << ix << ": libzip error code: " << error;}));
+    }
+
+    return string(buffer);
+}
+
+Function Runtime::parseFunction(const std::string& nspace, const std::string& path, const std::string& contents){
+    vector<vector<string>> lines;
+    istringstream contentStream(contents);
+    string line;
+
+    while(getline(contentStream, line)){
+        lines.push_back(lexer.splitCommand(line));
+    }
+    return Function(nspace, path, lines);
 }
 
 void Runtime::warn(const string& message){

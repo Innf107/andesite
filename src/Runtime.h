@@ -5,7 +5,6 @@
 #include "Parser/ParseError.h"
 #include "Parser.h"
 #include "Lexer.h"
-#include "DatapackLoader.h"
 #include "Config.h"
 #include "Datapack.h"
 #include <vector>
@@ -46,9 +45,22 @@ class Runtime {
 
         Scoreboard scoreboard;    
 
+        Datapack combinedDatapack = Datapack("GLOBAL", {});
+        std::vector<Datapack> loadedDatapacks;
+
         Response invalidObjective(const std::string& objectiveName);
 
         void runScript(const std::filesystem::path& file);
+
+        void loadDatapack(const Datapack& datapack);
+
+        Datapack loadFromZip(const std::filesystem::path& path);
+        Datapack loadFromDirectory(const std::filesystem::path& path);
+        std::vector<Function> readFunctions(zip_t* zip);
+
+        Function parseFunction(const std::string& nspace, const std::string& path, const std::string& contents);
+
+        std::string readZipStringIndex(zip_t* zip, const zip_uint64_t ix);
 
         void warn(const std::string& message);
 

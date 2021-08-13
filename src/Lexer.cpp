@@ -5,6 +5,16 @@
 
 using namespace std;
 
+vector<string> Lexer::split(const string& str, const char delimiter = '\n'){
+    string line;
+    istringstream stream(str);
+    vector<string> out;
+    while(getline(stream, line, delimiter)){
+        out.push_back(line);
+    }
+    return out;
+}
+
 vector<string> Lexer::splitCommand(const string& cmd){
     vector<string> vec;
     if (config.hasXRelaxedWhitespace){
