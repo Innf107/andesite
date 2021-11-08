@@ -24,7 +24,7 @@ int main(){
                 cout << mainRuntime.returnCode << endl;
                 if (mainRuntime.printScores){
                     cout << "scores: [";
-                    for (int score : mainRuntime.scores){
+                    for (int score : mainRuntime.getAllScores()){
                         cout << score << " ";
                     }
                     cout << "]" << endl;

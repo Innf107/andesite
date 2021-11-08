@@ -8,20 +8,9 @@
 #include <sstream>
 #include "Util.h"
 #include "Parser/ParseError.h"
+#include "Panic.h"
 
 #define UNUSED(x) (void)(x)
-
-/*
-new Parser()
-    .then(Parser::lit("scoreboard")
-        .then(Parser::lit("players")
-            .then(Parser::lit("add")
-                .then(Parser::ident("player")
-                    .then(Parser::integer("amount")
-                        .run([](args){return test(args)})))
-            .then(Parser::lit("remove")...)))))                    
-*/
-
 
 
 template<typename R> 
@@ -31,9 +20,19 @@ public:
     friend Parser;
     public:
         std::string getIdent(const std::string& name) const{
+            if (!idents.contains(name)){
+                std::ostringstream message;
+                message << "getIdent: no identifier for '" << name << "'";
+                throw Panic(message.str());
+            }
             return idents.at(name);
         }
         int getInteger(const std::string& name) const{
+            if (!integers.contains(name)){
+                std::ostringstream message;
+                message << "getInteger: no integer for '" << name << "'";
+                throw Panic(message.str());
+            }
             return integers.at(name);
         }
 

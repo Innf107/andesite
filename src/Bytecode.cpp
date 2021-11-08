@@ -37,7 +37,7 @@ Bytecode mkSetScore(unsigned int target, int score){
 
 Bytecode mkAddScore(unsigned int target, int score){
     Bytecode code;
-    code.op = setScoreOp;
+    code.op = addScoreOp;
     code.arguments[0] = target;
     code.arguments[1] = (unsigned int)score;
     return code;

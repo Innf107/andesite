@@ -24,6 +24,13 @@ Runtime::Runtime(){
                             .done([&](const auto& results){
                                 return mkGetScore(mkTarget(results.getIdent("player"), results.getIdent("objective")));
                             }))))
+                .then(BParser::lit("add")
+                    .then(BParser::ident("player")
+                        .then(BParser::ident("objective")
+                            .then(BParser::integer("value")
+                                .done([&](const auto& results){
+                                    return mkAddScore(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                })))))
                 ));
 }
 
@@ -76,6 +83,9 @@ void Runtime::runContext(const InstructionContext& context){
             case setScoreOp:
                 setScore(instruction.arguments[0], (int)instruction.arguments[1]);
                 break;
+            case addScoreOp:
+                addScore(instruction.arguments[0], (int)instruction.arguments[1]);
+                break;
             case getScoreOp:
                 getScore(instruction.arguments[0]);
                 break;
@@ -93,6 +103,13 @@ void Runtime::setScore(unsigned int target, int score){
     scores[target] = score;
 
     returnCode = score;
+    errorCode = 0;
+}
+
+void Runtime::addScore(unsigned int target, int score){
+    scores[target] += score;
+
+    returnCode = scores[target];
     errorCode = 0;
 }
 
@@ -141,3 +158,6 @@ unsigned int Runtime::getFunction(const string& name){
     }
 }
 
+vector<int> Runtime::getAllScores(){
+    return scores;
+}

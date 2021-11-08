@@ -19,6 +19,7 @@ public:
 
     void addScoreboard(); // TODO
     void setScore(const unsigned int target, int score);
+    void addScore(const unsigned int target, int score);
     void getScore(const unsigned int target);
 
     InstructionContext parseInstructions(const std::string& command);
@@ -36,10 +37,10 @@ public:
     bool printBytecode = false;
     bool printScores = false;
 
-    // shouldn't be public :/
-    std::vector<int> scores;
+    std::vector<int> getAllScores();
 
 private:
+    std::vector<int> scores;
     std::vector<InstructionContext> functions;
 
     std::map<std::pair<std::string, std::string>, unsigned int> targetNames;
