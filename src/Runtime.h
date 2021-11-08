@@ -11,6 +11,8 @@
 class Runtime
 {
 public:
+    Runtime();
+
     void processCommand(const std::string& command);
 
     void runContext(const InstructionContext& context);
@@ -21,7 +23,7 @@ public:
 
     InstructionContext parseInstructions(const std::string& command);
 
-    unsigned int mkTarget(const std::string& objective, const std::string& player);
+    unsigned int mkTarget(const std::string& player, const std::string& objective);
     
     unsigned int addFunction(const std::string& name, const InstructionContext& context);
     unsigned int getFunction(const std::string& name);
@@ -31,10 +33,17 @@ public:
 
     std::string lastErrorMessage;
 
+    bool printBytecode = false;
+    bool printScores = false;
+
+    // shouldn't be public :/
+    std::vector<int> scores;
+
 private:
     std::vector<InstructionContext> functions;
-    std::vector<int> scores;
 
     std::map<std::pair<std::string, std::string>, unsigned int> targetNames;
     std::map<std::string, unsigned int> functionNames;
+
+    Parser<Bytecode> bytecodeParser;
 };

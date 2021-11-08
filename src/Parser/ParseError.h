@@ -5,13 +5,14 @@
 
 class ParseError : public std::exception {
 public: 
-    explicit ParseError(std::string message, std::string received, std::string expected) : 
-        message(message), received(received), expected(expected) 
-    {}
+    explicit ParseError(std::string message) : 
+        message(message){}
 
     std::string message;
-    std::string received;
-    std::string expected;
+
+    const char* what() const noexcept override {
+        return message.c_str();
+    }
 };
 
 #endif

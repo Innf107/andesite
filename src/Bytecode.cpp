@@ -1,7 +1,27 @@
 #include "Bytecode.h"
 #include <string>
+#include <sstream>
 
 using namespace std;
+
+string opToString(BytecodeOp op){
+    switch(op){
+        case addScoreboardOp: return "addScoreboard";
+        case setScoreOp: return "setScore";
+        case addScoreOp: return "addScore";
+        case getScoreOp: return "getScore";
+        case callOp: return "call";
+    }
+    ostringstream out;
+    out << op;
+    return out.str();
+}
+
+string Bytecode::toString(){
+    ostringstream out;
+    out << opToString(op) << " " << arguments[0] << " " << arguments[1];
+    return out.str();
+}
 
 Bytecode mkAddScoreboard(std::string& name){
     //TODO

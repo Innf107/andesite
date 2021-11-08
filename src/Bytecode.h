@@ -15,6 +15,8 @@ class Bytecode {
     public:
         BytecodeOp op;
         unsigned int arguments[2];
+
+        std::string toString();
 };
 
 Bytecode mkAddScoreboard(std::string& name);

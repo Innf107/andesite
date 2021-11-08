@@ -5,6 +5,27 @@
 
 using namespace std;
 
+using BParser = Parser<Bytecode>;
+
+Runtime::Runtime(){
+    bytecodeParser = BParser()
+        .then(BParser::lit("scoreboard")
+            .then(BParser::lit("players")
+                .then(BParser::lit("set")
+                    .then(BParser::ident("player")
+                        .then(BParser::ident("objective")
+                            .then(BParser::integer("value")
+                                .done([&](const BParser::ParseResults& results){
+                                    return mkSetScore(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                })))))
+                .then(BParser::lit("get")
+                    .then(BParser::ident("player")
+                        .then(BParser::ident("objective")
+                            .done([&](const auto& results){
+                                return mkGetScore(mkTarget(results.getIdent("player"), results.getIdent("objective")));
+                            }))))
+                ));
+}
 
 void Runtime::processCommand(const string& command){
     InstructionContext context = parseInstructions(command);
@@ -12,12 +33,36 @@ void Runtime::processCommand(const string& command){
     runContext(context);
 }
 
-InstructionContext Runtime::parseInstructions(const string& command){
-    Bytecode* bytecode = new Bytecode[]{
-        mkSetScore(mkTarget("test", "test"), 5),
-        mkGetScore(mkTarget("test", "test")),
-    };
-    return {bytecode, 2};
+InstructionContext Runtime::parseInstructions(const string& commands){
+    // TODO: Split by lines -> map (Split by words -> parse to bytecode)
+    istringstream lineStream(commands);
+    std::vector<Bytecode> instructions;
+
+    for(std::string line; getline(lineStream, line);){
+        istringstream tokenStream(line);
+        std::vector<std::string> tokens;
+
+        for(std::string token; tokenStream >> token;){
+            tokens.push_back(token);
+        }
+
+        Bytecode instruction = bytecodeParser.run(tokens);
+        if (printBytecode){
+            std::cout << instruction.toString() << endl;
+        }
+        instructions.push_back(instruction);
+    }
+
+    InstructionContext context;
+
+    Bytecode* instructionArray = new Bytecode[instructions.size()];
+    for (unsigned int i = 0; i < instructions.size(); i++){
+        instructionArray[i] = instructions[i];
+    }
+    context.instructions = instructionArray;
+    context.instructionCount = instructions.size();
+
+    return context;
 }
 
 void Runtime::runContext(const InstructionContext& context){
@@ -56,7 +101,7 @@ void Runtime::getScore(unsigned int target){
     errorCode = 0;
 }
 
-unsigned int Runtime::mkTarget(const string& objective, const string& player){
+unsigned int Runtime::mkTarget(const string& player, const string& objective){
     const std::pair target(objective, player); 
     if (targetNames.contains(target)){
         return targetNames[target];
