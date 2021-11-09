@@ -15,14 +15,19 @@ public:
 
     void processCommand(const std::string& command);
 
-    void runContext(const InstructionContext& context);
+    void loadFunctionFromFile(const std::filesystem::path& file);
+
+    // `context` will not actually be mutated, but it cannot be const
+    // because we need to construct a reassignable pointer to it.
+    void runContext(InstructionContext& context);
 
     void addScoreboard(); // TODO
     void setScore(const unsigned int target, int score);
     void addScore(const unsigned int target, int score);
     void getScore(const unsigned int target);
 
-    InstructionContext parseInstructions(const std::string& command);
+    InstructionContext parseInstructions(const std::string& commands);
+    InstructionContext parseInstructions(std::istream& commands);
 
     unsigned int mkTarget(const std::string& player, const std::string& objective);
     

@@ -10,4 +10,7 @@ class InstructionContext {
         std::string name;
 
         ~InstructionContext();
+
+        InstructionContext(){};
+        InstructionContext(const InstructionContext& other);
 };

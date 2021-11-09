@@ -53,6 +53,6 @@ Bytecode mkGetScore(int target){
 Bytecode mkCall(int function){
     Bytecode code;
     code.op = callOp;
-    code.arguments[1] = function;
+    code.arguments[0] = function;
     return code;
 }

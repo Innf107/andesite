@@ -2,6 +2,7 @@
 #include <string>
 #include "Parser.h"
 #include "Parser/ParseError.h"
+#include "Runtime/UnboundFunctionError.h"
 #include "Runtime.h"
 
 using namespace std;
@@ -22,7 +23,9 @@ void usage(char* progName){
 int main(int argc, char* argv[]){
     Runtime mainRuntime;
 
-    vector<string> files;
+    vector<string> functionFiles;
+    //vector<string> datapackZips;
+    //vector<string> datapackFolders;
 
     for(int i = 1; i < argc; i++){
         string arg = argv[i];
@@ -47,11 +50,26 @@ int main(int argc, char* argv[]){
             usage(argv[0]);
             return 1;
         }
+        else if (arg.ends_with(".mcfunction")){
+            functionFiles.push_back(arg);
+        }
+        else if (arg.ends_with(".zip")){
+            cerr << ".zip based datapacks are not yet implemented. Sorry :(" << endl;
+            return 1;
+        }
         else {
-            files.push_back(arg);
+            cerr << "folder based datapacks are not yet implemented. Sorry :(" << endl;
+            return 1;
         }
     }
 
+
+    // Load all included function files first
+    for(string& functionFile : functionFiles){
+        mainRuntime.loadFunctionFromFile(functionFile);
+    }
+    
+    // Start processing commandline arguments
     for (string line; prompt(line);){
         try {
             mainRuntime.processCommand(line);
@@ -69,6 +87,9 @@ int main(int argc, char* argv[]){
             }
         } catch (ParseError& error){
             cerr << "\e[1;31mParse Error: " << error.message << "\e[0m" << endl;
+        }
+        catch (UnboundFunctionError& error){
+            cerr << "\e[1;31mUnbound Function: " << error.functionName << "\e[0m" << endl;
         }
     }
     return 0;
