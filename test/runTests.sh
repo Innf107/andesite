@@ -17,7 +17,7 @@ do
     else
         query="$expected"
     fi
-    result=$(out/andesite $args $f)
+    result=$(out/andesite $args $f --run "function $(basename $f)")
     set -e
     if  [ "$(echo "$result" | tail -n $lines | tr "\n" \# | grep -Po "$query")" ] 
     then
