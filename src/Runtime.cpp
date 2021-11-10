@@ -32,8 +32,18 @@ Runtime::Runtime(){
                         .then(BParser::ident("objective")
                             .then(BParser::integer("value")
                                 .done([&](const auto& results){
-                                    return mkAddScore(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                    return mkAddScoreConst(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
                                 })))))
+                .then(BParser::lit("operation")
+                    .then(BParser::ident("player1")
+                        .then(BParser::ident("objective1")
+                            .then(BParser::lit("+=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkAddScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        })
+                                    ))))))
                 ))
         .then(BParser::lit("function")
             .then(BParser::ident("functionName")
@@ -121,8 +131,11 @@ void Runtime::runContext(InstructionContext& initialContext){
                 case setScoreOp:
                     setScore(instruction.arguments[0], (int)instruction.arguments[1]);
                     break;
+                case addScoreConstOp:
+                    addScoreConst(instruction.arguments[0], (int)instruction.arguments[1]);
+                    break;
                 case addScoreOp:
-                    addScore(instruction.arguments[0], (int)instruction.arguments[1]);
+                    addScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
                 case getScoreOp:
                     getScore(instruction.arguments[0]);
@@ -155,10 +168,17 @@ void Runtime::setScore(unsigned int target, int score){
     errorCode = 0;
 }
 
-void Runtime::addScore(unsigned int target, int score){
+void Runtime::addScoreConst(unsigned int target, int score){
     scores[target] += score;
 
     returnCode = scores[target];
+    errorCode = 0;
+}
+
+void Runtime::addScore(unsigned int target1, unsigned int target2){
+    scores[target1] += scores[target2];
+
+    returnCode = scores[target1];
     errorCode = 0;
 }
 

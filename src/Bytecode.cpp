@@ -8,6 +8,7 @@ string opToString(BytecodeOp op){
     switch(op){
         case addScoreboardOp: return "addScoreboard";
         case setScoreOp: return "setScore";
+        case addScoreConstOp: return "addScoreConst";
         case addScoreOp: return "addScore";
         case getScoreOp: return "getScore";
         case callOp: return "call";
@@ -35,22 +36,30 @@ Bytecode mkSetScore(unsigned int target, int score){
     return code;
 }
 
-Bytecode mkAddScore(unsigned int target, int score){
+Bytecode mkAddScoreConst(unsigned int target, int score){
     Bytecode code;
-    code.op = addScoreOp;
+    code.op = addScoreConstOp;
     code.arguments[0] = target;
     code.arguments[1] = (unsigned int)score;
     return code;
 }
 
-Bytecode mkGetScore(int target){
+Bytecode mkAddScore(unsigned int target1, unsigned int target2){
+    Bytecode code;
+    code.op = addScoreOp;
+    code.arguments[0] = target1;
+    code.arguments[1] = target2;
+    return code;
+}
+
+Bytecode mkGetScore(unsigned int target){
     Bytecode code;
     code.op = getScoreOp;
     code.arguments[0] = target;
     return code;
 }
 
-Bytecode mkCall(int function){
+Bytecode mkCall(unsigned int function){
     Bytecode code;
     code.op = callOp;
     code.arguments[0] = function;

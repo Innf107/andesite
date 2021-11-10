@@ -23,7 +23,8 @@ public:
 
     void addScoreboard(); // TODO
     void setScore(const unsigned int target, int score);
-    void addScore(const unsigned int target, int score);
+    void addScoreConst(const unsigned int target, int score);
+    void addScore(const unsigned int target1, unsigned int target2);
     void getScore(const unsigned int target);
 
     InstructionContext parseInstructions(const std::string& commands);
