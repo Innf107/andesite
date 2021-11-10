@@ -10,6 +10,7 @@ string opToString(BytecodeOp op){
         case setScoreOp: return "setScore";
         case addScoreConstOp: return "addScoreConst";
         case addScoreOp: return "addScore";
+        case subScoreOp: return "subScore";
         case getScoreOp: return "getScore";
         case callOp: return "call";
     }
@@ -47,6 +48,22 @@ Bytecode mkAddScoreConst(unsigned int target, int score){
 Bytecode mkAddScore(unsigned int target1, unsigned int target2){
     Bytecode code;
     code.op = addScoreOp;
+    code.arguments[0] = target1;
+    code.arguments[1] = target2;
+    return code;
+}
+
+Bytecode mkSubScore(unsigned int target1, unsigned int target2){
+    Bytecode code;
+    code.op = subScoreOp;
+    code.arguments[0] = target1;
+    code.arguments[1] = target2;
+    return code;
+}
+
+Bytecode mkMulScore(unsigned int target1, unsigned int target2){
+    Bytecode code;
+    code.op = mulScoreOp;
     code.arguments[0] = target1;
     code.arguments[1] = target2;
     return code;

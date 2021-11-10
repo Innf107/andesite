@@ -6,7 +6,9 @@ enum BytecodeOp : unsigned int {
     setScoreOp,           
     //setScoreSelectorOp,
     addScoreConstOp,
-    addScoreOp,           
+    addScoreOp,
+    subScoreOp,
+    mulScoreOp,
     //addScoreSelectorOp,
     getScoreOp,         
     callOp,               
@@ -27,6 +29,10 @@ Bytecode mkSetScore(unsigned int target, int score);
 Bytecode mkAddScoreConst(unsigned int target, int score);
 
 Bytecode mkAddScore(unsigned int target1, unsigned int target2);
+
+Bytecode mkSubScore(unsigned int target1, unsigned int target2);
+
+Bytecode mkMulScore(unsigned int target1, unsigned int target2);
 
 Bytecode mkGetScore(unsigned int target);
 

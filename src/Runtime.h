@@ -18,13 +18,15 @@ public:
     void loadFunctionFromFile(const std::filesystem::path& file);
 
     // `context` will not actually be mutated, but it cannot be const
-    // because we need to construct a reassignable pointer to it.
+    // because we need to construct a reassignable pointer to it. :/
     void runContext(InstructionContext& context);
 
     void addScoreboard(); // TODO
     void setScore(const unsigned int target, int score);
     void addScoreConst(const unsigned int target, int score);
     void addScore(const unsigned int target1, unsigned int target2);
+    void subScore(const unsigned int target1, unsigned int target2);
+    void mulScore(const unsigned int target1, unsigned int target2);
     void getScore(const unsigned int target);
 
     InstructionContext parseInstructions(const std::string& commands);

@@ -43,7 +43,20 @@ Runtime::Runtime(){
                                         .done([&](const auto& results){
                                             return mkAddScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
                                         })
-                                    ))))))
+                                    )))
+                            .then(BParser::lit("-=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkSubScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit("*=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkMulScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                                )))
                 ))
         .then(BParser::lit("function")
             .then(BParser::ident("functionName")
@@ -137,6 +150,12 @@ void Runtime::runContext(InstructionContext& initialContext){
                 case addScoreOp:
                     addScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
+                case subScoreOp:
+                    subScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case mulScoreOp:
+                    mulScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
                 case getScoreOp:
                     getScore(instruction.arguments[0]);
                     break;
@@ -177,6 +196,20 @@ void Runtime::addScoreConst(unsigned int target, int score){
 
 void Runtime::addScore(unsigned int target1, unsigned int target2){
     scores[target1] += scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::subScore(unsigned int target1, unsigned int target2){
+    scores[target1] -= scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::mulScore(unsigned int target1, unsigned int target2){
+    scores[target1] *= scores[target2];
 
     returnCode = scores[target1];
     errorCode = 0;
