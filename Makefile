@@ -7,7 +7,7 @@ OUT ?= /usr/bin/
 
 GLOBAL_DEPS = /usr/lib/libzip.so
 
-CXX = clang++ -Wall -Wextra -std=c++20
+CXX = clang++ -Wall -Wextra -Werror=switch -std=c++20
 CC = $(CXX)
 
 SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.s)

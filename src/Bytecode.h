@@ -7,9 +7,12 @@ enum BytecodeOp : unsigned int {
     //setScoreSelectorOp,
     addScoreConstOp,
     addScoreOp,
+    //addScoreSelectorOp,
+    subScoreConstOp,
     subScoreOp,
     mulScoreOp,
-    //addScoreSelectorOp,
+    divScoreOp,
+    modScoreOp,
     getScoreOp,         
     callOp,               
 };
@@ -22,18 +25,6 @@ class Bytecode {
         std::string toString();
 };
 
-Bytecode mkAddScoreboard(std::string& name);
-
-Bytecode mkSetScore(unsigned int target, int score);
-
-Bytecode mkAddScoreConst(unsigned int target, int score);
-
-Bytecode mkAddScore(unsigned int target1, unsigned int target2);
-
-Bytecode mkSubScore(unsigned int target1, unsigned int target2);
-
-Bytecode mkMulScore(unsigned int target1, unsigned int target2);
-
-Bytecode mkGetScore(unsigned int target);
-
-Bytecode mkCall(unsigned int function);
+Bytecode mkBytecode(BytecodeOp op);
+Bytecode mkBytecode(BytecodeOp op, unsigned int arg);
+Bytecode mkBytecode(BytecodeOp op, unsigned int arg0, unsigned int arg1);

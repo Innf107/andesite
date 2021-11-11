@@ -10,7 +10,11 @@ string opToString(BytecodeOp op){
         case setScoreOp: return "setScore";
         case addScoreConstOp: return "addScoreConst";
         case addScoreOp: return "addScore";
+        case subScoreConstOp: return "subScoreConst";
         case subScoreOp: return "subScore";
+        case mulScoreOp: return "mulScore";
+        case divScoreOp: return "divScore";
+        case modScoreOp: return "modScore";
         case getScoreOp: return "getScore";
         case callOp: return "call";
     }
@@ -25,60 +29,22 @@ string Bytecode::toString(){
     return out.str();
 }
 
-Bytecode mkAddScoreboard(std::string& name){
-    //TODO
-}
-
-Bytecode mkSetScore(unsigned int target, int score){
+Bytecode mkBytecode(BytecodeOp op)
+{
     Bytecode code;
-    code.op = setScoreOp;
-    code.arguments[0] = target;
-    code.arguments[1] = (unsigned int)score;
+    code.op = op;
     return code;
 }
-
-Bytecode mkAddScoreConst(unsigned int target, int score){
+Bytecode mkBytecode(BytecodeOp op, unsigned int arg){
     Bytecode code;
-    code.op = addScoreConstOp;
-    code.arguments[0] = target;
-    code.arguments[1] = (unsigned int)score;
+    code.op = op;
+    code.arguments[0] = arg;
     return code;
 }
-
-Bytecode mkAddScore(unsigned int target1, unsigned int target2){
+Bytecode mkBytecode(BytecodeOp op, unsigned int arg0, unsigned int arg1){
     Bytecode code;
-    code.op = addScoreOp;
-    code.arguments[0] = target1;
-    code.arguments[1] = target2;
-    return code;
-}
-
-Bytecode mkSubScore(unsigned int target1, unsigned int target2){
-    Bytecode code;
-    code.op = subScoreOp;
-    code.arguments[0] = target1;
-    code.arguments[1] = target2;
-    return code;
-}
-
-Bytecode mkMulScore(unsigned int target1, unsigned int target2){
-    Bytecode code;
-    code.op = mulScoreOp;
-    code.arguments[0] = target1;
-    code.arguments[1] = target2;
-    return code;
-}
-
-Bytecode mkGetScore(unsigned int target){
-    Bytecode code;
-    code.op = getScoreOp;
-    code.arguments[0] = target;
-    return code;
-}
-
-Bytecode mkCall(unsigned int function){
-    Bytecode code;
-    code.op = callOp;
-    code.arguments[0] = function;
+    code.op = op;
+    code.arguments[0] = arg0;
+    code.arguments[1] = arg1;
     return code;
 }

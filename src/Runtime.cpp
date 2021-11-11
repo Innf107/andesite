@@ -19,20 +19,27 @@ Runtime::Runtime(){
                         .then(BParser::ident("objective")
                             .then(BParser::integer("value")
                                 .done([&](const BParser::ParseResults& results){
-                                    return mkSetScore(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                    return mkBytecode(setScoreOp, mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
                                 })))))
                 .then(BParser::lit("get")
                     .then(BParser::ident("player")
                         .then(BParser::ident("objective")
                             .done([&](const auto& results){
-                                return mkGetScore(mkTarget(results.getIdent("player"), results.getIdent("objective")));
+                                return mkBytecode(getScoreOp, mkTarget(results.getIdent("player"), results.getIdent("objective")));
                             }))))
                 .then(BParser::lit("add")
                     .then(BParser::ident("player")
                         .then(BParser::ident("objective")
                             .then(BParser::integer("value")
                                 .done([&](const auto& results){
-                                    return mkAddScoreConst(mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                    return mkBytecode(addScoreConstOp, mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
+                                })))))
+                .then(BParser::lit("remove")
+                    .then(BParser::ident("player")
+                        .then(BParser::ident("objective")
+                            .then(BParser::integer("value")
+                                .done([&](const auto& results){
+                                    return mkBytecode(subScoreConstOp, mkTarget(results.getIdent("player"), results.getIdent("objective")), results.getInteger("value"));
                                 })))))
                 .then(BParser::lit("operation")
                     .then(BParser::ident("player1")
@@ -41,27 +48,39 @@ Runtime::Runtime(){
                                 .then(BParser::ident("player2")
                                     .then(BParser::ident("objective2")
                                         .done([&](const auto& results){
-                                            return mkAddScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                            return mkBytecode(addScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
                                         })
                                     )))
                             .then(BParser::lit("-=")
                                 .then(BParser::ident("player2")
                                     .then(BParser::ident("objective2")
                                         .done([&](const auto& results){
-                                            return mkSubScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                            return mkBytecode(subScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
                                         }))))
                             .then(BParser::lit("*=")
                                 .then(BParser::ident("player2")
                                     .then(BParser::ident("objective2")
                                         .done([&](const auto& results){
-                                            return mkMulScore(mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                            return mkBytecode(mulScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit("/=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(divScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit("%=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(modScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
                                         }))))
                                 )))
                 ))
         .then(BParser::lit("function")
             .then(BParser::ident("functionName")
                 .done([&](const auto& results){
-                    return mkCall(getFunction(results.getIdent("functionName")));
+                    return mkBytecode(callOp, getFunction(results.getIdent("functionName")));
                 })));
 }
 
@@ -150,11 +169,20 @@ void Runtime::runContext(InstructionContext& initialContext){
                 case addScoreOp:
                     addScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
+                case subScoreConstOp:
+                    subScoreConst(instruction.arguments[0], instruction.arguments[1]);
+                    break;
                 case subScoreOp:
                     subScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
                 case mulScoreOp:
                     mulScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case divScoreOp:
+                    divScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case modScoreOp:
+                    modScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
                 case getScoreOp:
                     getScore(instruction.arguments[0]);
@@ -201,6 +229,13 @@ void Runtime::addScore(unsigned int target1, unsigned int target2){
     errorCode = 0;
 }
 
+void Runtime::subScoreConst(unsigned int target, int score){
+    scores[target] -= score;
+
+    returnCode = scores[target];
+    errorCode = 0;
+}
+
 void Runtime::subScore(unsigned int target1, unsigned int target2){
     scores[target1] -= scores[target2];
 
@@ -214,6 +249,21 @@ void Runtime::mulScore(unsigned int target1, unsigned int target2){
     returnCode = scores[target1];
     errorCode = 0;
 }
+
+void Runtime::divScore(unsigned int target1, unsigned int target2){
+    scores[target1] /= scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::modScore(unsigned int target1, unsigned int target2){
+    scores[target1] %= scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
 
 void Runtime::getScore(unsigned int target){
     returnCode = scores[target];
