@@ -15,6 +15,10 @@ string opToString(BytecodeOp op){
         case mulScoreOp: return "mulScore";
         case divScoreOp: return "divScore";
         case modScoreOp: return "modScore";
+        case minScoreOp: return "minScore";
+        case maxScoreOp: return "maxScore";
+        case swapScoreOp: return "swapScore";
+        case moveScoreOp: return "moveScore";
         case getScoreOp: return "getScore";
         case callOp: return "call";
     }

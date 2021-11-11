@@ -13,6 +13,10 @@ enum BytecodeOp : unsigned int {
     mulScoreOp,
     divScoreOp,
     modScoreOp,
+    minScoreOp,
+    maxScoreOp,
+    swapScoreOp,
+    moveScoreOp,
     getScoreOp,         
     callOp,               
 };

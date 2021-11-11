@@ -30,6 +30,10 @@ public:
     void mulScore(const unsigned int target1, unsigned int target2);
     void divScore(const unsigned int target1, unsigned int target2);
     void modScore(const unsigned int target1, unsigned int target2);
+    void minScore(const unsigned int target1, unsigned int target2);
+    void maxScore(const unsigned int target1, unsigned int target2);
+    void swapScore(const unsigned int target1, unsigned int target2);
+    void moveScore(const unsigned int target1, unsigned int target2);
     void getScore(const unsigned int target);
 
     InstructionContext parseInstructions(const std::string& commands);

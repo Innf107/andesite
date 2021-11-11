@@ -75,7 +75,31 @@ Runtime::Runtime(){
                                         .done([&](const auto& results){
                                             return mkBytecode(modScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
                                         }))))
-                                )))
+                            .then(BParser::lit("<")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(minScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit(">")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(maxScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit("><")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(swapScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                            .then(BParser::lit("=")
+                                .then(BParser::ident("player2")
+                                    .then(BParser::ident("objective2")
+                                        .done([&](const auto& results){
+                                            return mkBytecode(moveScoreOp, mkTarget(results.getIdent("player1"), results.getIdent("objective1")), mkTarget(results.getIdent("player2"), results.getIdent("objective2")));
+                                        }))))
+                        )))
                 ))
         .then(BParser::lit("function")
             .then(BParser::ident("functionName")
@@ -184,6 +208,18 @@ void Runtime::runContext(InstructionContext& initialContext){
                 case modScoreOp:
                     modScore(instruction.arguments[0], instruction.arguments[1]);
                     break;
+                case minScoreOp:
+                    minScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case maxScoreOp:
+                    maxScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case swapScoreOp:
+                    swapScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
+                case moveScoreOp:
+                    moveScore(instruction.arguments[0], instruction.arguments[1]);
+                    break;
                 case getScoreOp:
                     getScore(instruction.arguments[0]);
                     break;
@@ -259,6 +295,38 @@ void Runtime::divScore(unsigned int target1, unsigned int target2){
 
 void Runtime::modScore(unsigned int target1, unsigned int target2){
     scores[target1] %= scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::minScore(unsigned int target1, unsigned int target2){
+    if (scores[target2] < scores[target1])
+        scores[target1] = scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::maxScore(unsigned int target1, unsigned int target2){
+    if (scores[target2] > scores[target1])
+        scores[target1] = scores[target2];
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::swapScore(unsigned int target1, unsigned int target2){
+    int temp = scores[target1];
+    scores[target1] = scores[target2];
+    scores[target2] = temp;
+
+    returnCode = scores[target1];
+    errorCode = 0;
+}
+
+void Runtime::moveScore(unsigned int target1, unsigned int target2){
+    scores[target1] = scores[target2];
 
     returnCode = scores[target1];
     errorCode = 0;
